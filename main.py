@@ -2,6 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 import numpy as np
 from Imagem.visualizador_imagem import VisualizadorImagemCustomTk
+import os
 
 #====================================================================================================================
 # Cria a janela
@@ -37,36 +38,50 @@ tabview.add("Morfologia")
 #====================================================================================================================
 
 #FILTROS
-# Caminho da imagem PGM
-caminho_imagem = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils\lena.pgm"
+# Diretório base das imagens
+diretorio_imagens = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils"
+caminho_imagem = f"{diretorio_imagens}\Airplane.pgm"  # Caminho de imagem padrão inicial
 
-def combobox_callback(choice):
-    print("Combobox dropdown clicked:", choice)
-
+# Função callback para o ComboBox de seleção de imagem
 def combobox_callback_image(choice):
+    global visualizador
     print("Combobox dropdown clicked imagem:", choice)
+    
+    # Atualiza o caminho da imagem com base na escolha do ComboBox
+    caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
+    
+    # Exibe a nova imagem no visualizador
+    visualizador.exibir_imagem(caminho_imagem_selecionado)
 
-# Frame container para a tab de Filtros
+# Frame container para a aba de Filtros
 container_frame = ctk.CTkFrame(tabview.tab("Filtros"))
 container_frame.pack(padx=40, pady=40, fill="x") 
 
-# Visualizador da Imagem
+# Visualizador de imagem com caminho padrão
 visualizador = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
 visualizador.exibir(tabview.tab("Filtros"))
 
-# Combobox para seleção de Imagem
-combobox_var_image = ctk.StringVar(value="Escolha a Imagem")
+# ComboBox para seleção de imagem
 combobox_image = ctk.CTkComboBox(
     container_frame,
     values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
     command=combobox_callback_image,
-    variable=combobox_var_image,
     width=270,
     font=("Helvetica", 14),
 )
 combobox_image.pack(side="left", padx=10, pady=10)
 
-# Combobox para seleção de Filtro
+
+
+
+
+
+
+# Função callback para o ComboBox de filtro
+def combobox_callback(choice):
+    print("Combobox dropdown clicked:", choice)
+
+# ComboBox para seleção de filtro
 combobox_var = ctk.StringVar(value="Escolha o Filtro")
 combobox_filter = ctk.CTkComboBox(
     container_frame,
@@ -90,9 +105,6 @@ button_apply = ctk.CTkButton(
     command=lambda: print("Botão Aplicar Filtro clicado")
 )
 button_apply.pack(side="left", padx=10, pady=10)
-
-
-
 
 
 

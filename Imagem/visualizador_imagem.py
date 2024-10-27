@@ -9,6 +9,7 @@ class VisualizadorImagemCustomTk:
         self.master = master
         self.caminho_imagem = caminho_imagem
         self.imagem = self.carregar_imagem()
+        self.label_imagem = None  # Inicializa o label como None
 
     def carregar_imagem(self):
         """Carrega uma imagem PGM (P2 ou P5) e converte para um objeto CTkImage."""
@@ -51,7 +52,18 @@ class VisualizadorImagemCustomTk:
     def exibir(self, tab):
         """Exibe a imagem carregada no widget CTkLabel no tabview especificado."""
         if self.imagem is not None:
-            label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
-            label_imagem.pack(pady=10)
+            if self.label_imagem is None:
+                # Cria o label apenas na primeira vez
+                self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
+                self.label_imagem.pack(pady=10)
+            else:
+                # Atualiza a imagem no label já existente
+                self.label_imagem.configure(image=self.imagem)
         else:
             print("Não foi possível carregar a imagem.")
+
+    def exibir_imagem(self, novo_caminho_imagem):
+        """Atualiza a imagem exibida com um novo caminho de imagem."""
+        self.caminho_imagem = novo_caminho_imagem
+        self.imagem = self.carregar_imagem()
+        self.exibir(self.master)  # Atualiza a imagem exibida
