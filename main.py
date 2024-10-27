@@ -101,7 +101,33 @@ button_apply = ctk.CTkButton(
 button_apply.pack(side="left", padx=10, pady=10)
 
 
+# TRANSFORMAÇÃO
+def combobox_callback_image_transformacao(choice):
+    global visualizador_transformacao
+    print("Combobox dropdown clicked imagem:", choice)
+    
+    # Atualiza o caminho da imagem com base na escolha do ComboBox
+    caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
+    
+    # Exibe a nova imagem no visualizador
+    visualizador_transformacao.exibir_imagem(caminho_imagem_selecionado)
 
+# Frame container para a aba de Filtros
+container_frame_transformacao= ctk.CTkFrame(tabview.tab("Transformações"))
+container_frame_transformacao.pack(padx=40, pady=40, fill="x") 
+
+# ComboBox para seleção de imagem
+combobox_image = ctk.CTkComboBox(
+    container_frame_transformacao,
+    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    command=combobox_callback_image_transformacao,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image.pack(side="left", padx=10, pady=10)
+# Visualizador de imagem com caminho padrão
+visualizador_transformacao = VisualizadorImagemCustomTk(container_frame_transformacao, caminho_imagem)
+visualizador_transformacao.exibir(tabview.tab("Transformações"))
 
 
 
@@ -137,7 +163,7 @@ visualizador_histograma.exibir(tabview.tab("Histograma"))
 
 
 
-# Morfologia
+# MORFOLOGIA
 def combobox_callback_image_morfologia(choice):
     global visualizador_morfologia
     print("Combobox dropdown clicked imagem:", choice)
