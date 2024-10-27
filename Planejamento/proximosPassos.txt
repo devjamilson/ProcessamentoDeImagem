@@ -15,4 +15,5 @@
 - Função de Transferencia de Intensidade
 - Função de Transferencia Linear
 
-- Histograma
+- Histograma:
+Equalizar o Histograma da Imagem lena.pgm
