@@ -1,5 +1,7 @@
 import customtkinter as ctk
-
+from PIL import Image
+import numpy as np
+from Imagem.visualizador_imagem import VisualizadorImagemCustomTk
 
 #====================================================================================================================
 # Cria a janela
@@ -34,6 +36,13 @@ tabview.add("Morfologia")
 # Adicionando Funcionandalidades Nas Abas
 #====================================================================================================================
 
+#FILTROS
+# Caminho da imagem PGM
+caminho_imagem = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\lena.pgm"
+visualizador = VisualizadorImagemCustomTk(janela, caminho_imagem)
+visualizador.exibir(tabview.tab("Filtros"))
+
+
 def combobox_callback(choice):
     print("Combobox dropdown clicked:", choice)
 
@@ -48,7 +57,7 @@ combobox = ctk.CTkComboBox(
     font=("Helvetica", 14),
     
 )
-combobox.grid(row=1, column=0, padx=10, pady=10, columnspan=2)  # Posiciona o ComboBox
+combobox.pack(padx=100, pady=100)  # Posiciona o ComboBox
 
 
 

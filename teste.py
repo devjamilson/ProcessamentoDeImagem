@@ -48,10 +48,25 @@ class VisualizadorImagemCustomTk:
             print(f"Erro ao carregar a imagem: {e}")
             return None
 
-    def exibir(self, tab):
-        """Exibe a imagem carregada no widget CTkLabel no tabview especificado."""
+    def exibir(self):
+        """Exibe a imagem carregada no widget CTkLabel."""
         if self.imagem is not None:
-            label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
+            label_imagem = ctk.CTkLabel(self.master, image=self.imagem, text="")
             label_imagem.pack(pady=10)
         else:
             print("Não foi possível carregar a imagem.")
+
+# Configurando a interface principal do Customtkinter
+janela = ctk.CTk()
+janela.title("Visualizador de Imagem PGM")
+janela.geometry("800x600")
+
+# Caminho da imagem PGM
+caminho_imagem = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\lena.pgm"
+
+# Instancia e exibe a imagem
+visualizador = VisualizadorImagemCustomTk(janela, caminho_imagem)
+visualizador.exibir()
+
+# Inicia o loop da interface
+janela.mainloop()
