@@ -43,7 +43,7 @@ class VisualizadorImagemCustomTk:
 
                 # Converte o array numpy para uma imagem PIL
                 imagem_pil = Image.fromarray(imagem, mode='L')
-                return ctk.CTkImage(light_image=imagem_pil, dark_image=imagem_pil)  # Converte para CTkImage
+                return ctk.CTkImage(light_image=imagem_pil, dark_image=imagem_pil, size=(256,256))  # Converte para CTkImage
         except Exception as e:
             print(f"Erro ao carregar a imagem: {e}")
             return None
