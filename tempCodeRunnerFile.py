@@ -1,2 +1,1 @@
-
-tabview.add("Morfologia")
+HISTOGRAMA

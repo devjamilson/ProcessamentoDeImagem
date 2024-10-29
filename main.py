@@ -37,8 +37,10 @@ tabview.add("Morfologia")
 # Adicionando Funcionandalidades Nas Abas
 #====================================================================================================================
 
+#********************************************************************************************************************
 #FILTROS
-# Diretório base das imagens
+#********************************************************************************************************************
+
 diretorio_imagens = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils"
 caminho_imagem = f"{diretorio_imagens}\lena.pgm" 
 
@@ -46,21 +48,16 @@ def combobox_callback_image(choice):
     global visualizador
     print("Combobox dropdown clicked imagem:", choice)
     
-    # Atualiza o caminho da imagem com base na escolha do ComboBox
     caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
     
-    # Exibe a nova imagem no visualizador
     visualizador.exibir_imagem(caminho_imagem_selecionado)
 
-# Frame container para a aba de Filtros
 container_frame = ctk.CTkFrame(tabview.tab("Filtros"))
 container_frame.pack(padx=40, pady=40, fill="x") 
 
-# Visualizador de imagem com caminho padrão
 visualizador = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
 visualizador.exibir(tabview.tab("Filtros"))
 
-# ComboBox para seleção de imagem
 combobox_image = ctk.CTkComboBox(
     container_frame,
     values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
@@ -71,11 +68,9 @@ combobox_image = ctk.CTkComboBox(
 combobox_image.pack(side="left", padx=10, pady=10)
 
 
-# Função callback para o ComboBox de filtro
 def combobox_callback(choice):
     print("Combobox dropdown clicked:", choice)
 
-# ComboBox para seleção de filtro
 combobox_var = ctk.StringVar(value="Escolha o Filtro")
 combobox_filter = ctk.CTkComboBox(
     container_frame,
@@ -92,7 +87,6 @@ combobox_filter = ctk.CTkComboBox(
 )
 combobox_filter.pack(side="left", padx=10, pady=10)
 
-# Botão para aplicar o filtro ou ação
 button_apply = ctk.CTkButton(
     container_frame,
     text="Aplicar Filtro",
@@ -101,7 +95,14 @@ button_apply = ctk.CTkButton(
 button_apply.pack(side="left", padx=10, pady=10)
 
 
-# TRANSFORMAÇÃO
+
+
+
+#********************************************************************************************************************
+#TRANSFORMAÇÕES
+#********************************************************************************************************************
+
+
 def combobox_callback_image_transformacao(choice):
     global visualizador_transformacao
     print("Combobox dropdown clicked imagem:", choice)
@@ -130,6 +131,62 @@ visualizador_transformacao = VisualizadorImagemCustomTk(container_frame_transfor
 visualizador_transformacao.exibir(tabview.tab("Transformações"))
 
 
+
+
+#********************************************************************************************************************
+# HISTOGRAMA
+#********************************************************************************************************************
+
+def combobox_callback_image_histograma(choice):
+    global visualizador_histograma
+    print("Combobox dropdown clicked imagem:", choice)
+    
+    caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
+    
+    visualizador_histograma.exibir_imagem(caminho_imagem_selecionado)
+
+container_frame_histograma= ctk.CTkFrame(tabview.tab("Histograma"))
+container_frame_histograma.pack(padx=40, pady=40, fill="x") 
+
+combobox_image = ctk.CTkComboBox(
+    container_frame_histograma,
+    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    command=combobox_callback_image_histograma,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image.pack(side="left", padx=10, pady=10)
+visualizador_histograma = VisualizadorImagemCustomTk(container_frame_histograma, caminho_imagem)
+visualizador_histograma.exibir(tabview.tab("Histograma"))
+
+
+
+
+#********************************************************************************************************************
+# MORFOLOGIA
+#********************************************************************************************************************
+
+def combobox_callback_image_morfologia(choice):
+    global visualizador_morfologia
+    print("Combobox dropdown clicked imagem:", choice)
+    
+    caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
+    
+    visualizador_morfologia.exibir_imagem(caminho_imagem_selecionado)
+
+container_frame_morfologia= ctk.CTkFrame(tabview.tab("Morfologia"))
+container_frame_morfologia.pack(padx=40, pady=40, fill="x") 
+
+combobox_image = ctk.CTkComboBox(
+    container_frame_morfologia,
+    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    command=combobox_callback_image_morfologia,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image.pack(side="left", padx=10, pady=10)
+visualizador_morfologia = VisualizadorImagemCustomTk(container_frame_morfologia, caminho_imagem)
+visualizador_morfologia.exibir(tabview.tab("Morfologia"))
 
 
 
