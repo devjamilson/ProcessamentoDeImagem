@@ -23,7 +23,7 @@ janela.minsize(width=1370, height=700)
 # Abas
 #====================================================================================================================
 tabview = ctk.CTkTabview(janela, width=1370, height=700, fg_color="#f2f2f2")
-tabview.pack(pady=10, padx=10, fill="both", expand=True)
+tabview.pack(pady=20, padx=20, fill="both", expand=True)
 
 
 # Adicionando as abas
@@ -54,7 +54,8 @@ def combobox_callback_image(choice):
     visualizador.exibir_imagem(caminho_imagem_selecionado)
 
 container_frame = ctk.CTkFrame(tabview.tab("Filtros"))
-container_frame.pack(padx=40, pady=40, fill="x") 
+container_frame.pack(padx=10, pady=10, fill="x")
+
 
 visualizador = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
 visualizador.exibir(tabview.tab("Filtros"))
@@ -116,7 +117,7 @@ def combobox_callback_image_transformacao(choice):
 
 # Frame container para a aba de Filtros
 container_frame_transformacao= ctk.CTkFrame(tabview.tab("Transformações"))
-container_frame_transformacao.pack(padx=40, pady=40, fill="x") 
+container_frame_transformacao.pack(padx=10, pady=10, fill="x")
 
 # ComboBox para seleção de imagem
 combobox_image = ctk.CTkComboBox(
@@ -130,6 +131,34 @@ combobox_image.pack(side="left", padx=10, pady=10)
 # Visualizador de imagem com caminho padrão
 visualizador_transformacao = VisualizadorImagemCustomTk(container_frame_transformacao, caminho_imagem)
 visualizador_transformacao.exibir(tabview.tab("Transformações"))
+
+def combobox_callback(choice):
+    print("Combobox dropdown clicked:", choice)
+
+combobox_var_transforme = ctk.StringVar(value="Escolha a transformação")
+combobox_transforme = ctk.CTkComboBox(
+    container_frame_transformacao,
+    values=[
+        "Faixa dinâmica", "Gama", 
+        "Logaritmo", "Negativo", 
+        "Sigmoide"
+    ],
+    command=combobox_callback,
+    variable=combobox_var_transforme,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_transforme.pack(side="left", padx=10, pady=10)
+
+button_apply_transforme = ctk.CTkButton(
+    container_frame_transformacao,
+    text="Aplicar Transformação",
+    command=lambda: print("Botão Aplicar transformação"),
+    width=200,
+)
+button_apply_transforme.pack(side="left", padx=10, pady=10)
+
+
 
 
 
@@ -162,7 +191,7 @@ def aplicar_equalizacao(tab):
 diretorio_imagens = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils"
 
 container_frame_histograma = ctk.CTkFrame(tabview.tab("Histograma"))
-container_frame_histograma.pack(padx=40, pady=40, fill="x")
+container_frame_histograma.pack(padx=10, pady=10, fill="x")
 
 combobox_image = ctk.CTkComboBox(
     container_frame_histograma,
@@ -181,7 +210,7 @@ botao_equalizar = ctk.CTkButton(
     width=100,
     font=("Helvetica", 14)
 )
-botao_equalizar.pack(side="right", padx=10, pady=10)
+botao_equalizar.pack(side="left", padx=10, pady=10)
 
 
 
@@ -200,7 +229,7 @@ def combobox_callback_image_morfologia(choice):
     visualizador_morfologia.exibir_imagem(caminho_imagem_selecionado)
 
 container_frame_morfologia= ctk.CTkFrame(tabview.tab("Morfologia"))
-container_frame_morfologia.pack(padx=40, pady=40, fill="x") 
+container_frame_morfologia.pack(padx=10, pady=10, fill="x")
 
 combobox_image = ctk.CTkComboBox(
     container_frame_morfologia,
@@ -214,6 +243,31 @@ visualizador_morfologia = VisualizadorImagemCustomTk(container_frame_morfologia,
 visualizador_morfologia.exibir(tabview.tab("Morfologia"))
 
 
+def combobox_callback(choice):
+    print("Combobox dropdown clicked:", choice)
+
+combobox_var_morfologia = ctk.StringVar(value="Escolha a Morfologia")
+combobox_morfologia = ctk.CTkComboBox(
+    container_frame_morfologia,
+    values=[
+        "Dilatação", "Erosão", 
+        "Fechamento", "Abertura", 
+        "Hit Or Miss", "Top Hat", "Bottom Hat"
+    ],
+    command=combobox_callback,
+    variable=combobox_var_morfologia,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_morfologia.pack(side="left", padx=10, pady=10)
+
+button_apply_morfologia= ctk.CTkButton(
+    container_frame_morfologia,
+    text="Aplicar Morfologia",
+    command=lambda: print("Botão Aplicar Morfologia"),
+    width=200,
+)
+button_apply_morfologia.pack(side="left", padx=10, pady=10)
 
 
 #====================================================================================================================

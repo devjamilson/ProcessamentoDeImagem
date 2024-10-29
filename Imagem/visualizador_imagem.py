@@ -56,7 +56,7 @@ class VisualizadorImagemCustomTk:
             if self.label_imagem is None:
                 # Cria o label apenas na primeira vez
                 self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
-                self.label_imagem.pack(pady=10)
+                self.label_imagem.pack(side='left', padx=200)
             else:
                 # Atualiza a imagem no label já existente
                 self.label_imagem.configure(image=self.imagem)
