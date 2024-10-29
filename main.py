@@ -2,6 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 import numpy as np
 from Imagem.visualizador_imagem import VisualizadorImagemCustomTk
+from Histograma.equalizar_histograma import EqualizadorHistograma, carregar_imagem_pgm
 import os
 
 #====================================================================================================================
@@ -136,17 +137,32 @@ visualizador_transformacao.exibir(tabview.tab("Transformações"))
 #********************************************************************************************************************
 # HISTOGRAMA
 #********************************************************************************************************************
+# Variáveis globais
+imagem_atual = None
+equalizador = None
 
 def combobox_callback_image_histograma(choice):
-    global visualizador_histograma
+    global imagem_atual, equalizador
     print("Combobox dropdown clicked imagem:", choice)
     
     caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
     
-    visualizador_histograma.exibir_imagem(caminho_imagem_selecionado)
+    imagem_atual = carregar_imagem_pgm(caminho_imagem_selecionado)
+    equalizador = EqualizadorHistograma(imagem_atual)
+    print("Imagem carregada:", choice)
 
-container_frame_histograma= ctk.CTkFrame(tabview.tab("Histograma"))
-container_frame_histograma.pack(padx=40, pady=40, fill="x") 
+def aplicar_equalizacao(tab):
+    if equalizador is not None:
+        equalizador.equalizar()  # Realiza a equalização
+        equalizador.plotar_resultados(tab)  # Exibe a imagem e o histograma no tab especificado
+    else:
+        print("Nenhuma imagem foi carregada para equalizar.")
+
+
+diretorio_imagens = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils"
+
+container_frame_histograma = ctk.CTkFrame(tabview.tab("Histograma"))
+container_frame_histograma.pack(padx=40, pady=40, fill="x")
 
 combobox_image = ctk.CTkComboBox(
     container_frame_histograma,
@@ -156,8 +172,17 @@ combobox_image = ctk.CTkComboBox(
     font=("Helvetica", 14),
 )
 combobox_image.pack(side="left", padx=10, pady=10)
-visualizador_histograma = VisualizadorImagemCustomTk(container_frame_histograma, caminho_imagem)
-visualizador_histograma.exibir(tabview.tab("Histograma"))
+
+# Botão "Equalizar" para realizar a equalização
+botao_equalizar = ctk.CTkButton(
+    container_frame_histograma,
+    text="Equalizar",
+    command=lambda: aplicar_equalizacao(tabview.tab("Histograma")),  # Usando lambda para passar o argumento
+    width=100,
+    font=("Helvetica", 14)
+)
+botao_equalizar.pack(side="right", padx=10, pady=10)
+
 
 
 
