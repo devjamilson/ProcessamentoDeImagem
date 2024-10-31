@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 import customtkinter as ctk
 
@@ -84,3 +84,10 @@ class VisualizadorImagemCustomTk:
         plt.xlim([0, 256])
         plt.bar(bins[:-1], histograma, width=1, color='gray')
         plt.show()
+
+    def exibir_imagem_transformada(self, imagem_transformada):
+        """Exibe a imagem transformada no visualizador."""
+        imagem_transformada = imagem_transformada.resize((256, 256))  # Ajuste o tamanho da imagem, se necessário
+        imagem_tk = ImageTk.PhotoImage(imagem_transformada)  # Converte a imagem PIL para um objeto ImageTk
+        self.label_imagem.configure(image=imagem_tk)  # Atualiza o label com a nova imagem transformada
+        self.label_imagem.image = imagem_tk  # Armazena uma referência à imagem

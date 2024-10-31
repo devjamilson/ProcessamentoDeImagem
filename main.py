@@ -1,7 +1,9 @@
 import customtkinter as ctk
 from PIL import Image
+from PIL import ImageTk
 import numpy as np
 from Imagem.visualizador_imagem import VisualizadorImagemCustomTk
+from Transformações.negativo import ProcessamentoImagemNegativo
 from Histograma.equalizar_histograma import EqualizadorHistograma, carregar_imagem_pgm
 import os
 
@@ -103,60 +105,6 @@ button_apply.pack(side="left", padx=10, pady=10)
 #********************************************************************************************************************
 #TRANSFORMAÇÕES
 #********************************************************************************************************************
-
-
-def combobox_callback_image_transformacao(choice):
-    global visualizador_transformacao
-    print("Combobox dropdown clicked imagem:", choice)
-    
-    # Atualiza o caminho da imagem com base na escolha do ComboBox
-    caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
-    
-    # Exibe a nova imagem no visualizador
-    visualizador_transformacao.exibir_imagem(caminho_imagem_selecionado)
-
-# Frame container para a aba de Filtros
-container_frame_transformacao= ctk.CTkFrame(tabview.tab("Transformações"))
-container_frame_transformacao.pack(padx=10, pady=10, fill="x")
-
-# ComboBox para seleção de imagem
-combobox_image = ctk.CTkComboBox(
-    container_frame_transformacao,
-    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
-    command=combobox_callback_image_transformacao,
-    width=270,
-    font=("Helvetica", 14),
-)
-combobox_image.pack(side="left", padx=10, pady=10)
-# Visualizador de imagem com caminho padrão
-visualizador_transformacao = VisualizadorImagemCustomTk(container_frame_transformacao, caminho_imagem)
-visualizador_transformacao.exibir(tabview.tab("Transformações"))
-
-def combobox_callback(choice):
-    print("Combobox dropdown clicked:", choice)
-
-combobox_var_transforme = ctk.StringVar(value="Escolha a transformação")
-combobox_transforme = ctk.CTkComboBox(
-    container_frame_transformacao,
-    values=[
-        "Faixa dinâmica", "Gama", 
-        "Logaritmo", "Negativo", 
-        "Sigmoide"
-    ],
-    command=combobox_callback,
-    variable=combobox_var_transforme,
-    width=270,
-    font=("Helvetica", 14),
-)
-combobox_transforme.pack(side="left", padx=10, pady=10)
-
-button_apply_transforme = ctk.CTkButton(
-    container_frame_transformacao,
-    text="Aplicar Transformação",
-    command=lambda: print("Botão Aplicar transformação"),
-    width=200,
-)
-button_apply_transforme.pack(side="left", padx=10, pady=10)
 
 
 

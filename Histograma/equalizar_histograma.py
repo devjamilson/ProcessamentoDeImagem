@@ -7,30 +7,24 @@ import os
 
 class EqualizadorHistograma:
     def __init__(self, imagem):
-        # Converte a imagem para escala de cinza
         self.imagem_original = imagem
         self.imagem_equalizada = None
 
     def calcular_histograma(self):
-        # Calcula o histograma da imagem (256 níveis de cinza)
         histograma, _ = np.histogram(self.imagem_original, bins=256, range=(0, 256))
         return histograma
 
     def equalizar(self):
-        # Calcula o histograma e o CDF da imagem original
         histograma = self.calcular_histograma()
         cdf = histograma.cumsum()
-        cdf_normalizado = cdf / cdf[-1]  # Normalizar o CDF
+        cdf_normalizado = cdf / cdf[-1]  
 
-        # Aplicar a transformação de equalização
         imagem_equalizada = np.floor(255 * cdf_normalizado[self.imagem_original]).astype(np.uint8)
         
-        # Armazena a imagem equalizada para uso futuro
         self.imagem_equalizada = imagem_equalizada
         return self.imagem_equalizada
 
     def calcular_histograma_equalizado(self):
-        # Calcula o histograma da imagem equalizada
         if self.imagem_equalizada is None:
             raise ValueError("A imagem ainda não foi equalizada.")
         histograma, _ = np.histogram(self.imagem_equalizada, bins=256, range=(0, 256))
@@ -74,7 +68,6 @@ class EqualizadorHistograma:
         label.pack(pady=10)
 
 
-# Função para carregar uma imagem PGM com numpy
 def carregar_imagem_pgm(caminho_imagem):
     if not os.path.exists(caminho_imagem):
         raise FileNotFoundError(f"O arquivo não foi encontrado: {caminho_imagem}")
