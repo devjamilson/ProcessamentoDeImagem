@@ -2,6 +2,8 @@ from PIL import Image
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import customtkinter as ctk
+import tkinter as tk
 
 def carregar_imagem_pgm(caminho_imagem):
     if not os.path.exists(caminho_imagem):
@@ -32,13 +34,12 @@ def carregar_imagem_pgm(caminho_imagem):
     return imagem
 
 
-
-
 class MedianFilter:
     def __init__(self, path: str, kernel_size: int = 3):
         self.image = carregar_imagem_pgm(path)  # Carrega a imagem em tons de cinza
         self.kernel_size = kernel_size
         self.filtered_image = None
+        self.tk_image = None  # Adiciona o atributo para manter a imagem em memória
     
     def apply_filter(self):
         img_array = np.array(self.image)
@@ -73,8 +74,13 @@ class MedianFilter:
         plt.axis("off")
         
         plt.show()
+    
+    def get_ctk_image(self, width=None, height=None):
+        """Converte a imagem filtrada para CTkImage para uso no CustomTkinter."""
+        if self.filtered_image is None:
+            raise ValueError("Primeiro aplique o filtro usando o método `apply_filter`.")
+        
+        # Converte a imagem para CTkImage e mantém em memória
+        self.tk_image = ctk.CTkImage(self.filtered_image, size=(width, height))
+        return self.tk_image
 
-# Exemplo de uso
-filtro = MedianFilter(r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils\lena.pgm", kernel_size=3)
-filtro.apply_filter()
-filtro.show_images()

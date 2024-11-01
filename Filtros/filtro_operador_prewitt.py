@@ -2,8 +2,10 @@ from PIL import Image
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import customtkinter as ctk  # Certifique-se de que CustomTkinter esteja instalado
 
 def carregar_imagem_pgm(caminho_imagem):
+    """Carrega uma imagem no formato PGM (P2 ou P5)."""
     if not os.path.exists(caminho_imagem):
         raise FileNotFoundError(f"O arquivo não foi encontrado: {caminho_imagem}")
     
@@ -13,17 +15,13 @@ def carregar_imagem_pgm(caminho_imagem):
         if header == b'P5':
             width, height = map(int, f.readline().split())
             maxval = int(f.readline().strip())
-            
             imagem_data = np.fromfile(f, dtype=np.uint8 if maxval < 256 else np.uint16)
             imagem = imagem_data.reshape((height, width))
         
         elif header == b'P2':
             width, height = map(int, f.readline().split())
             maxval = int(f.readline().strip())
-            
-            imagem_data = []
-            for line in f:
-                imagem_data.extend(map(int, line.split()))
+            imagem_data = [int(i) for line in f for i in line.split()]
             imagem = np.array(imagem_data, dtype=np.uint8).reshape((height, width))
         
         else:
@@ -33,21 +31,23 @@ def carregar_imagem_pgm(caminho_imagem):
 
 class PrewittFilter:
     def __init__(self, path: str):
+        """Inicializa o filtro Prewitt carregando a imagem do caminho fornecido."""
         self.image = carregar_imagem_pgm(path)  # Carrega a imagem em tons de cinza
         self.filtered_image_x = None
         self.filtered_image_y = None
     
     def apply_filter(self):
+        """Aplica o filtro Prewitt à imagem."""
         img_array = np.array(self.image, dtype=np.float32)
         
         # Definindo os kernels de Prewitt
-        Gx = np.array([[-1, 0, 1],
-                       [-1, 0, 1],
-                       [-1, 0, 1]], dtype=np.float32)
-        
-        Gy = np.array([[1, 1, 1],
+        Gx = np.array([[1, 1, 1],
                        [0, 0, 0],
                        [-1, -1, -1]], dtype=np.float32)
+        
+        Gy = np.array([[1, 0, -1],
+                       [1, 0, -1],
+                       [1, 0, -1]], dtype=np.float32)
         
         # Aplicando convolução para detectar bordas
         self.filtered_image_x = self.convolve(img_array, Gx)
@@ -58,7 +58,7 @@ class PrewittFilter:
         self.filtered_image_y = np.clip(self.filtered_image_y, 0, 255).astype(np.uint8)
     
     def convolve(self, img, kernel):
-        # Obtém as dimensões da imagem e do kernel
+        """Aplica a convolução manualmente à imagem usando o kernel fornecido."""
         img_height, img_width = img.shape
         kernel_size = kernel.shape[0]
         pad_width = kernel_size // 2
@@ -76,6 +76,7 @@ class PrewittFilter:
         return output
 
     def show_images(self):
+        """Exibe a imagem original e as imagens filtradas."""
         if self.filtered_image_x is None or self.filtered_image_y is None:
             print("Primeiro aplique o filtro usando o método `apply_filter`.")
             return
@@ -103,7 +104,13 @@ class PrewittFilter:
         
         plt.show()
 
-# Exemplo de uso
-filtro = PrewittFilter(r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils\lena.pgm")
-filtro.apply_filter()
-filtro.show_images()
+    def get_ctk_images(self, width=None, height=None):
+        """Converte as imagens filtradas para CTkImage para uso no CustomTkinter."""
+        if self.filtered_image_x is None or self.filtered_image_y is None:
+            raise ValueError("Primeiro aplique o filtro usando o método `apply_filter`.")
+
+        # Converte as imagens filtradas para CTkImage
+        tk_image_x = ctk.CTkImage(Image.fromarray(self.filtered_image_x), size=(width, height))
+        tk_image_y = ctk.CTkImage(Image.fromarray(self.filtered_image_y), size=(width, height))
+        
+        return tk_image_x, tk_image_y

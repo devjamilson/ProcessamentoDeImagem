@@ -85,9 +85,15 @@ class VisualizadorImagemCustomTk:
         plt.bar(bins[:-1], histograma, width=1, color='gray')
         plt.show()
 
-    def exibir_imagem_transformada(self, imagem_transformada):
-        """Exibe a imagem transformada no visualizador."""
-        imagem_transformada = imagem_transformada.resize((256, 256))  # Ajuste o tamanho da imagem, se necessário
-        imagem_tk = ImageTk.PhotoImage(imagem_transformada)  # Converte a imagem PIL para um objeto ImageTk
-        self.label_imagem.configure(image=imagem_tk)  # Atualiza o label com a nova imagem transformada
-        self.label_imagem.image = imagem_tk  # Armazena uma referência à imagem
+    def exibir_imagem_transformada(self, tab, imagem_transformada):
+        """Exibe a imagem carregada no widget CTkLabel no tabview especificado."""
+        if self.imagem is not None:
+            if self.label_imagem is None:
+                # Cria o label apenas na primeira vez
+                self.label_imagem = ctk.CTkLabel(tab, image=imagem_transformada, text="")
+                self.label_imagem.pack(side='left', padx=200)
+            else:
+                # Atualiza a imagem no label já existente
+                self.label_imagem.configure(image=self.imagem)
+        else:
+            print("Não foi possível carregar a imagem.")

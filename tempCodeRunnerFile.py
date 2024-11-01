@@ -1,2 +1,2 @@
 
-# Função chamada ao clicar no botão "Aplicar Transformação"
+    visualizador.exibir_imagem(caminho_image
