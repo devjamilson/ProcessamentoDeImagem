@@ -346,6 +346,65 @@ button_apply_transformacao = ctk.CTkButton(
 )
 button_apply_transformacao.pack(side="left", padx=10, pady=10)
 
+
+#********************************************************************************************************************
+#HISTOGRAMA
+#********************************************************************************************************************
+
+#HEADER
+container_frame_histograma = ctk.CTkFrame(tabview.tab("Histograma"))
+container_frame_histograma.pack(padx=10, pady=10, fill="x")
+
+#usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
+#Instância da Classe 
+visualizador_histograma_eq = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
+visualizador_histograma_eq.exibir_img_histo(tabview.tab("Histograma"))
+
+
+
+# Variáveis globais para manter seleção de filtro e caminho de imagem
+caminho_imagem_selecionado_histograma = None
+label_histograma = None
+
+
+# Função chamada no Select das imagens
+def combobox_callback_image_histograma(choice):
+    global caminho_imagem_selecionado_histograma
+    print("Combobox dropdown clicked imagem:", choice)
+    caminho_imagem_selecionado_histograma = os.path.join(diretorio_imagens, choice)
+    visualizador_histograma_eq.exibir_imagem_histo(caminho_imagem_selecionado_histograma)
+    visualizador_histograma_eq.mostrar_histograma(tabview.tab("Histograma"))
+
+def equalizar_imagem():
+    global label_histograma, caminho_imagem_selecionado_histograma
+
+    if label_histograma is not None:
+        label_histograma.destroy()
+
+    Equalizada = EqualizadorHistograma(caminho_imagem_selecionado_histograma)
+    Equalizada.equalizar()
+    tk_image = Equalizada.get_ctk_image(width=256, height=256)
+
+    label_histograma = ctk.CTkLabel(tabview.tab("Histograma"), image=tk_image, text="")
+    label_histograma.pack(side='left'); 
+    print("Imagem Equalizada")
+
+combobox_image_histograma= ctk.CTkComboBox(
+    container_frame_histograma,
+    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    command=combobox_callback_image_histograma,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image_histograma.pack(side="left", padx=10, pady=10)
+
+button_apply_histograma = ctk.CTkButton(
+    container_frame_histograma,
+    text="Equalizar Imagem",
+    command=equalizar_imagem
+)
+button_apply_histograma.pack(side="left", padx=10, pady=10)
+
 #====================================================================================================================
 # Inicia o loop da interface
 #====================================================================================================================

@@ -3,9 +3,11 @@ import numpy as np
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 import customtkinter as ctk
+import io
 
 # Classe para visualizar imagens PGM em Customtkinter
 class VisualizadorImagemCustomTk:
+
     def __init__(self, master, caminho_imagem):
         self.master = master
         self.caminho_imagem = caminho_imagem
@@ -63,37 +65,71 @@ class VisualizadorImagemCustomTk:
         else:
             print("Não foi possível carregar a imagem.")
 
+    def exibir_img_histo(self, tab):
+            """Exibe a imagem carregada no widget CTkLabel no tabview especificado."""
+            if self.imagem is not None:
+                if self.label_imagem is None:
+                    # Cria o label apenas na primeira vez
+                    self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
+                    self.label_imagem.pack(side='top', anchor='nw', padx=200, pady=10)
+
+                else:
+                    # Atualiza a imagem no label já existente
+                    self.label_imagem.configure(image=self.imagem)
+            else:
+                print("Não foi possível carregar a imagem.")
+
+    def exibir_imagem_histo(self, novo_caminho_imagem):
+            """Atualiza a imagem exibida com um novo caminho de imagem."""
+            self.caminho_imagem = novo_caminho_imagem
+            self.imagem = self.carregar_imagem()
+            self.exibir_img_histo(self.master) 
+
     def exibir_imagem(self, novo_caminho_imagem):
         """Atualiza a imagem exibida com um novo caminho de imagem."""
         self.caminho_imagem = novo_caminho_imagem
         self.imagem = self.carregar_imagem()
         self.exibir(self.master)  # Atualiza a imagem exibida
 
-    def mostrar_histograma(self):
-        """Exibe o histograma da imagem carregada."""
+     # Atualiza a imagem exibida
+
+    def mostrar_histograma(self, tab):
+        """Exibe o histograma da imagem carregada diretamente em uma CTkLabel."""
         if self.imagem is None:
             print("Nenhuma imagem carregada para exibir o histograma.")
             return
         
-        histograma, bins = np.histogram(self.imagem.flatten(), bins=256, range=[0, 256])
-        
-        plt.figure(figsize=(10, 5))
-        plt.title("Histograma da Imagem PGM")
-        plt.xlabel("Intensidade dos Pixels")
-        plt.ylabel("Número de Pixels")
-        plt.xlim([0, 256])
-        plt.bar(bins[:-1], histograma, width=1, color='gray')
-        plt.show()
+        # Converte o CTkImage para um array numpy para processamento
+        pil_image = self.imagem._light_image  # Acessa a imagem PIL do CTkImage
+        np_image = np.array(pil_image)
 
-    def exibir_imagem_transformada(self, tab, imagem_transformada):
-        """Exibe a imagem carregada no widget CTkLabel no tabview especificado."""
-        if self.imagem is not None:
-            if self.label_imagem is None:
-                # Cria o label apenas na primeira vez
-                self.label_imagem = ctk.CTkLabel(tab, image=imagem_transformada, text="")
-                self.label_imagem.pack(side='left', padx=200)
-            else:
-                # Atualiza a imagem no label já existente
-                self.label_imagem.configure(image=self.imagem)
+        # Calcula o histograma
+        histograma, bins = np.histogram(np_image.flatten(), bins=256, range=[0, 256])
+
+        # Cria uma figura do histograma e salva como imagem no buffer
+        fig, ax = plt.subplots(figsize=(5, 3))  # Ajuste o tamanho conforme necessário
+        ax.bar(bins[:-1], histograma, width=1, color='gray')
+        ax.set_title("Histograma da Imagem")
+        ax.set_xlabel("Intensidade dos Pixels")
+        ax.set_ylabel("Número de Pixels")
+        ax.set_xlim([0, 256])
+
+        # Salva a figura em um buffer de memória
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        plt.close(fig)  # Fecha a figura para liberar memória
+
+        # Converte a imagem do buffer para PIL e depois para CTkImage
+        histograma_imagem = Image.open(buf)
+        ctk_histograma_imagem = ctk.CTkImage(histograma_imagem, size=(440, 250))  # Ajuste o tamanho conforme necessário
+
+        # Exibe na CTkLabel dentro do tab especificado
+        if not hasattr(self, 'label_histograma') or self.label_histograma is None:
+            # Cria a label apenas na primeira vez
+            self.label_histograma = ctk.CTkLabel(tab, image=ctk_histograma_imagem, text="")
+            self.label_histograma.pack(side='top', anchor='ne')
         else:
-            print("Não foi possível carregar a imagem.")
+            # Atualiza a imagem no label já existente
+            self.label_histograma.configure(image=ctk_histograma_imagem)
+

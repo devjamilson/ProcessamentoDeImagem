@@ -1,113 +1,107 @@
-import numpy as np
-import matplotlib.pyplot as plt
-import numpy as np
-from PIL import Image
 import os
+import numpy as np
+from PIL import Image, ImageTk
+import matplotlib.pyplot as plt
+import customtkinter as ctk
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-
-class EqualizadorHistograma:
-    def __init__(self, imagem):
-        # Converte a imagem para escala de cinza
-        self.imagem_original = imagem
-        self.imagem_equalizada = None
-
-    def calcular_histograma(self):
-        # Calcula o histograma da imagem (256 níveis de cinza)
-        histograma, _ = np.histogram(self.imagem_original, bins=256, range=(0, 256))
-        return histograma
-
-    def equalizar(self):
-        # Calcula o histograma e o CDF da imagem original
-        histograma = self.calcular_histograma()
-        cdf = histograma.cumsum()
-        cdf_normalizado = cdf / cdf[-1]  # Normalizar o CDF
-
-        # Aplicar a transformação de equalização
-        imagem_equalizada = np.floor(255 * cdf_normalizado[self.imagem_original]).astype(np.uint8)
-        
-        # Armazena a imagem equalizada para uso futuro
-        self.imagem_equalizada = imagem_equalizada
-        return self.imagem_equalizada
-
-    def calcular_histograma_equalizado(self):
-        # Calcula o histograma da imagem equalizada
-        if self.imagem_equalizada is None:
-            raise ValueError("A imagem ainda não foi equalizada.")
-        histograma, _ = np.histogram(self.imagem_equalizada, bins=256, range=(0, 256))
-        return histograma
-
-    def plotar_resultados(self):
-        # Visualizar imagem original, histograma original, imagem equalizada, e histograma equalizado
-        plt.figure(figsize=(12, 6))
-
-        # Imagem original
-        plt.subplot(2, 2, 1)
-        plt.imshow(self.imagem_original, cmap='gray')
-        plt.title('Imagem Original')
-        plt.axis('off')
-
-        # Histograma da imagem original
-        plt.subplot(2, 2, 2)
-        plt.plot(self.calcular_histograma())
-        plt.title('Histograma Original')
-
-        # Imagem equalizada
-        plt.subplot(2, 2, 3)
-        plt.imshow(self.imagem_equalizada, cmap='gray')
-        plt.title('Imagem Equalizada')
-        plt.axis('off')
-
-        # Histograma da imagem equalizada
-        plt.subplot(2, 2, 4)
-        plt.plot(self.calcular_histograma_equalizado())
-        plt.title('Histograma Equalizado')
-
-        plt.tight_layout()
-        plt.show()
-
-# Função para carregar uma imagem PGM com numpy
 def carregar_imagem_pgm(caminho_imagem):
-    """Carrega uma imagem PGM (P2 ou P5) e retorna como um array numpy."""
+    """Carrega uma imagem PGM (P2 ou P5) e retorna como um array numpy e o valor máximo de intensidade."""
     if not os.path.exists(caminho_imagem):
         raise FileNotFoundError(f"O arquivo não foi encontrado: {caminho_imagem}")
 
     with open(caminho_imagem, 'rb') as f:
         header = f.readline().strip()
         
-        # Verifica o formato (P2 para ASCII, P5 para binário)
         if header == b'P5':
-            # Formato binário
             width, height = map(int, f.readline().split())
             maxval = int(f.readline().strip())
-            
-            # Carrega a imagem em escala de cinza
             imagem_data = np.fromfile(f, dtype=np.uint8 if maxval < 256 else np.uint16)
             imagem = imagem_data.reshape((height, width))
         
         elif header == b'P2':
-            # Formato ASCII
             width, height = map(int, f.readline().split())
             maxval = int(f.readline().strip())
-            
-            # Carrega a imagem linha por linha em escala de cinza
-            imagem_data = []
-            for line in f:
-                imagem_data.extend(map(int, line.split()))
+            imagem_data = [int(i) for line in f for i in line.split()]
             imagem = np.array(imagem_data, dtype=np.uint8).reshape((height, width))
         
         else:
             raise ValueError("Formato PGM não suportado (esperado P2 ou P5).")
+    
+    return imagem, maxval
 
-    return imagem
+class EqualizadorHistograma:
+    def __init__(self, path: str):
+        """Inicializa a classe com a imagem a ser equalizada."""
+        self.imagem_original, self.maxval = carregar_imagem_pgm(path)
+        self.imagem_equalizada = None
+
+    def calcular_histograma(self):
+        """Calcula o histograma da imagem original."""
+        histograma, _ = np.histogram(self.imagem_original, bins=256, range=(0, 256))
+        return histograma
+
+    def equalizar(self):
+        """Aplica a equalização de histograma na imagem original."""
+        histograma = self.calcular_histograma()
+        cdf = histograma.cumsum()
+        cdf_normalizado = (cdf / cdf[-1]) * 255  
+
+        imagem_equalizada = cdf_normalizado[self.imagem_original].astype(np.uint8)
+        self.imagem_equalizada = imagem_equalizada
+
+    def calcular_histograma_equalizado(self):
+        """Calcula o histograma da imagem equalizada."""
+        if self.imagem_equalizada is None:
+            raise ValueError("A imagem ainda não foi equalizada.")
+        histograma, _ = np.histogram(self.imagem_equalizada, bins=256, range=(0, 256))
+        return histograma
+
+    def show_images(self):
+        """Mostra a imagem original, a imagem equalizada, e seus histogramas."""
+        if self.imagem_equalizada is None:
+            print("Primeiro aplique a equalização usando o método `equalizar`.")
+            return
+
+        plt.figure(figsize=(12, 6))
+        
+        # Imagem original
+        plt.subplot(2, 2, 1)
+        plt.title("Imagem Original")
+        plt.imshow(self.imagem_original, cmap="gray")
+        plt.axis("off")
+
+        # Histograma da imagem original
+        plt.subplot(2, 2, 2)
+        plt.title("Histograma Original")
+        plt.bar(range(256), self.calcular_histograma(), color="gray")
+
+        # Imagem equalizada
+        plt.subplot(2, 2, 3)
+        plt.title("Imagem Equalizada")
+        plt.imshow(self.imagem_equalizada, cmap="gray")
+        plt.axis("off")
+
+        # Histograma da imagem equalizada
+        plt.subplot(2, 2, 4)
+        plt.title("Histograma Equalizado")
+        plt.bar(range(256), self.calcular_histograma_equalizado(), color="gray")
+        
+        plt.tight_layout()
+        plt.show()
+
+    def get_ctk_image(self, width=None, height=None):
+        """Converte a imagem equalizada para CTkImage para uso no CustomTkinter."""
+        if self.imagem_equalizada is None:
+            raise ValueError("Primeiro aplique a equalização usando o método `equalizar`.")
+        
+        # Converte a imagem para CTkImage e mantém em memória
+        imagem_tk = Image.fromarray(self.imagem_equalizada)
+        self.tk_image = ctk.CTkImage(imagem_tk, size=(width, height))
+        return self.tk_image
 
 
-# Carregar a imagem PGM
-caminho =  r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils\lena.pgm"
-imagem = carregar_imagem_pgm(caminho)
 
-# Inicializar a classe e equalizar a imagem
-equalizador = EqualizadorHistograma(imagem)
-imagem_equalizada = equalizador.equalizar()
-
-# Plotar os resultados
-equalizador.plotar_resultados()
+Equalizador = EqualizadorHistograma(r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils\lena.pgm")
+Equalizador.equalizar()
+Equalizador.show_images()
