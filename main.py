@@ -3,7 +3,6 @@ from PIL import Image
 from PIL import ImageTk
 import numpy as np
 from Imagem.visualizador_imagem import VisualizadorImagemCustomTk
-from Transformações.negativo import ProcessamentoImagemNegativo
 from Filtros.filtro_suavizacao_mediana import MedianFilter 
 from Filtros.filtro_suavizacao_media import MediaFilter
 from Filtros.filtro_passa_alta_basico import HighPassFilter
@@ -12,6 +11,12 @@ from Filtros.filtro_operador_prewitt import PrewittFilter
 from Filtros.filtro_operador_de_prewitt_magnitude import PrewittMagnitudeFilter
 from Filtros.filtro_de_alto_reforco import HighBoostFilter
 from Filtros.filtro_operador_de_robert import RobertsFilter
+
+from Transformações.negativo import Negativo
+from Transformações.gama import Gama
+from Transformações.logaritmo import Log
+from Transformações.sigmoide import Sigmoide
+from Transformações.faixaDinamica import FaixaDinamica
 
 from Histograma.equalizar_histograma import EqualizadorHistograma, carregar_imagem_pgm
 import os
@@ -60,6 +65,8 @@ visualizador.exibir(tabview.tab("Filtros"))
 filtro_selecionado = None
 caminho_imagem_selecionado = None
 label = None
+label_x = None
+label_y = None
 
 # Função chamada no Select das imagens
 def combobox_callback_image(choice):
@@ -76,7 +83,7 @@ def combobox_callback(choice):
 
 # Função para aplicar o filtro selecionado e exibir a imagem resultante
 def aplicar_filtro():
-    global filtro_selecionado, caminho_imagem_selecionado, label  # Incluindo label como global
+    global filtro_selecionado, caminho_imagem_selecionado, label, label_x, label_y # Incluindo label como global
     
 
     print("Valor de filtro selecionado:", filtro_selecionado)
@@ -84,7 +91,12 @@ def aplicar_filtro():
 
      
     if label is not None:
-        label.destroy() 
+       label.destroy() 
+
+    if label_y is not None:
+        label_y.destroy()
+    if label_x is not None:
+        label_x.destroy()
 
     if filtro_selecionado == "Filtro de Suavização - mediana":
         filtro = MedianFilter(caminho_imagem_selecionado, kernel_size=3)
@@ -206,6 +218,133 @@ button_apply = ctk.CTkButton(
 )
 button_apply.pack(side="left", padx=10, pady=10)
 
+
+#********************************************************************************************************************
+#TRANSFORMAÇÕES
+#********************************************************************************************************************
+#HEADER
+container_frame_transformacao = ctk.CTkFrame(tabview.tab("Transformações"))
+container_frame_transformacao.pack(padx=10, pady=10, fill="x")
+
+#usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
+#Instância da Classe 
+visualizador_transformacao = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
+visualizador_transformacao.exibir(tabview.tab("Transformações"))
+
+# Variáveis globais para manter seleção de filtro e caminho de imagem
+transformacao_selecionada = None
+caminho_imagem_selecionado_transformacoes = None
+label_transformacao = None
+
+
+# Função chamada no Select das imagens
+def combobox_callback_image_transformacao(choice):
+    global caminho_imagem_selecionado_transformacoes
+    print("Combobox dropdown clicked imagem:", choice)
+    caminho_imagem_selecionado_transformacoes = os.path.join(diretorio_imagens, choice)
+    visualizador_transformacao.exibir_imagem(caminho_imagem_selecionado_transformacoes)
+
+def combobox_callback_transformacao(choice):
+    global transformacao_selecionada
+    print("Combobox dropdown clicked filtro:", choice)
+    transformacao_selecionada = choice
+
+
+# Função para aplicar o filtro selecionado e exibir a imagem resultante
+def aplicar_transformacao():
+    global transformacao_selecionada, caminho_imagem_selecionado_transformacoes, label_transformacao  # Incluindo label como global
+    
+
+    print("Valor de filtro selecionado:", transformacao_selecionada)
+    print("Valor de caminho da imagem:", caminho_imagem_selecionado_transformacoes)
+
+     
+    if label_transformacao is not None:
+       label_transformacao.destroy() 
+
+    if transformacao_selecionada == "Faixa Dinâmica":
+       transformacao = FaixaDinamica(caminho_imagem_selecionado_transformacoes)
+       transformacao.transformar_faixa_dinamica()
+       tk_image = transformacao.get_ctk_image(width=256, height=256)
+        
+       label_transformacao = ctk.CTkLabel(tabview.tab("Transformações"), image=tk_image, text="")
+       label_transformacao.pack(side='left', padx=200); 
+       print("Transformação de Faixa Dinâmica aplicado a imagem exibida.")
+
+    elif transformacao_selecionada == "Gama":
+        transformacao = Gama(caminho_imagem_selecionado_transformacoes)
+        #vator de escala, fator gama
+        transformacao.apply_gamma(1.0, 0.5)
+        tk_image = transformacao.get_ctk_image(width=256, height=256)
+            
+        label_transformacao = ctk.CTkLabel(tabview.tab("Transformações"), image=tk_image, text="")
+        label_transformacao.pack(side='left', padx=200); 
+        print("Transformação de Gama aplicada a imagem exibida.")
+
+    elif transformacao_selecionada == "Logaritmica":
+        transformacao = Log(caminho_imagem_selecionado_transformacoes)
+        #Parametro da transformação logaritmica
+        transformacao.apply_log(1.0)
+        tk_image = transformacao.get_ctk_image(width=256, height=256)
+            
+        label_transformacao = ctk.CTkLabel(tabview.tab("Transformações"), image=tk_image, text="")
+        label_transformacao.pack(side='left', padx=200); 
+        print("Transformação Logaritmica aplicada a imagem exibida.")
+    
+    elif transformacao_selecionada == "Negativo":
+        transformacao =  Negativo(caminho_imagem_selecionado_transformacoes)
+        transformacao.apply_negative()
+        tk_image = transformacao.get_ctk_image(width=256, height=256)
+            
+        label_transformacao = ctk.CTkLabel(tabview.tab("Transformações"), image=tk_image, text="")
+        label_transformacao.pack(side='left', padx=200); 
+        print("Transformação Negativo aplicada a imagem exibida.")
+    
+    elif transformacao_selecionada == "Sigmoide":
+        transformacao =  Sigmoide(caminho_imagem_selecionado_transformacoes)
+
+        #centro dos valores de cinza, largura da janela para suavidade da transição
+        transformacao.apply_sigmoide(128,30)
+        tk_image = transformacao.get_ctk_image(width=256, height=256)
+            
+        label_transformacao = ctk.CTkLabel(tabview.tab("Transformações"), image=tk_image, text="")
+        label_transformacao.pack(side='left', padx=200); 
+        print("Transformação Sigmoide aplicada a imagem exibida.")
+
+    else:
+        print("Selecione uma transformação para aplicar.")
+
+
+combobox_image_transformacao = ctk.CTkComboBox(
+    container_frame_transformacao,
+    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    command=combobox_callback_image_transformacao,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image_transformacao.pack(side="left", padx=10, pady=10)
+
+combobox_var_transformacao = ctk.StringVar(value="Escolha a Transformação")
+combobox_transformacao = ctk.CTkComboBox(
+    container_frame_transformacao,
+    values=[
+        "Faixa Dinâmica", "Gama", 
+        "Logaritmica", "Negativo", 
+        "Sigmoide"
+    ],
+    command=combobox_callback_transformacao,
+    variable=combobox_var_transformacao,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_transformacao.pack(side="left", padx=10, pady=10)
+
+button_apply_transformacao = ctk.CTkButton(
+    container_frame_transformacao,
+    text="Aplicar Transformação",
+    command=aplicar_transformacao
+)
+button_apply_transformacao.pack(side="left", padx=10, pady=10)
 
 #====================================================================================================================
 # Inicia o loop da interface
