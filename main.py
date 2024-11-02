@@ -59,6 +59,7 @@ visualizador.exibir(tabview.tab("Filtros"))
 # Variáveis globais para manter seleção de filtro e caminho de imagem
 filtro_selecionado = None
 caminho_imagem_selecionado = None
+label = None
 
 # Função chamada no Select das imagens
 def combobox_callback_image(choice):
@@ -67,7 +68,7 @@ def combobox_callback_image(choice):
     caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
     visualizador.exibir_imagem(caminho_imagem_selecionado)
 
-# Função chamada ao selecionar o filtro
+
 def combobox_callback(choice):
     global filtro_selecionado
     print("Combobox dropdown clicked filtro:", choice)
@@ -77,10 +78,13 @@ def combobox_callback(choice):
 def aplicar_filtro():
     global filtro_selecionado, caminho_imagem_selecionado, label  # Incluindo label como global
     
-    filtro_selecionado = 'Filtro Operador de Robert'
 
     print("Valor de filtro selecionado:", filtro_selecionado)
     print("Valor de caminho da imagem:", caminho_imagem_selecionado)
+
+     
+    if label is not None:
+        label.destroy() 
 
     if filtro_selecionado == "Filtro de Suavização - mediana":
         filtro = MedianFilter(caminho_imagem_selecionado, kernel_size=3)
@@ -167,7 +171,7 @@ def aplicar_filtro():
         print("Filtro de Operador de Robert aplicado e imagem exibida.")
 
     else:
-        print("Selecione um filtro de suavização mediana para aplicar.")
+        print("Selecione um filtro para aplicar.")
 
 combobox_image = ctk.CTkComboBox(
     container_frame,
@@ -178,9 +182,6 @@ combobox_image = ctk.CTkComboBox(
 )
 combobox_image.pack(side="left", padx=10, pady=10)
 
-
-def combobox_callback(choice):
-    print("Combobox dropdown clicked:", choice)
 
 combobox_var = ctk.StringVar(value="Escolha o Filtro")
 combobox_filter = ctk.CTkComboBox(
