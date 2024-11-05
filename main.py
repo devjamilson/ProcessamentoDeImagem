@@ -18,6 +18,15 @@ from Transformações.logaritmo import Log
 from Transformações.sigmoide import Sigmoide
 from Transformações.faixaDinamica import FaixaDinamica
 
+
+from OperadoresMorfologicos.dilatacao import Dilatacao
+from OperadoresMorfologicos.erosao import Erosao
+from OperadoresMorfologicos.abertura import Abertura
+from OperadoresMorfologicos.fechamento import Fechamento
+from OperadoresMorfologicos.topHat import TopHat
+from OperadoresMorfologicos.bottomHat import BottomHat
+from OperadoresMorfologicos.hitOrMiss import HitOrMiss
+
 from Histograma.equalizar_histograma import EqualizadorHistograma, carregar_imagem_pgm
 import os
 
@@ -404,6 +413,151 @@ button_apply_histograma = ctk.CTkButton(
     command=equalizar_imagem
 )
 button_apply_histograma.pack(side="left", padx=10, pady=10)
+
+
+
+#********************************************************************************************************************
+#MORFOLOGIA
+#********************************************************************************************************************
+
+#HEADER
+container_frame_morfologia = ctk.CTkFrame(tabview.tab("Morfologia"))
+container_frame_morfologia.pack(padx=10, pady=10, fill="x")
+
+#usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
+#Instância da Classe 
+visualizador_morfologia = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
+visualizador_morfologia.exibir(tabview.tab("Morfologia"))
+
+
+# Variáveis globais para manter seleção de filtro e caminho de imagem
+caminho_imagem_selecionado_morfologia = None
+label_morfologia = None
+morfologia_selecionada = None
+
+
+# Função chamada no Select das imagens
+def combobox_callback_image_morfologia(choice):
+    global caminho_imagem_selecionado_morfologia
+    print("Combobox dropdown clicked imagem:", choice)
+    caminho_imagem_selecionado_morfologia = os.path.join(diretorio_imagens, choice)
+    visualizador_morfologia.exibir_imagem(caminho_imagem_selecionado_morfologia)
+
+def combobox_callback_morfologia(choice):
+    global morfologia_selecionada
+    print("Combobox dropdown clicked filtro:", choice)
+    morfologia_selecionada = choice
+
+
+def aplicar_morfologia():
+    global morfologia_selecionada, caminho_imagem_selecionado_morfologia, label_morfologia  # Incluindo label como global
+
+      
+    if label_morfologia is not None:
+       label_morfologia.destroy() 
+
+    if morfologia_selecionada == "Dilatação":
+        morfologia = Dilatacao(caminho_imagem_selecionado_morfologia)
+        morfologia.apply_filter()
+        tk_image = morfologia.get_ctk_image(width=256, height=256)
+
+        label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
+        label_morfologia.pack(side='left', padx=200)
+        print("Morfologia de dilatação aplicado e imagem exibida.")
+    elif morfologia_selecionada == "Erosão":
+        morfologia = Erosao(caminho_imagem_selecionado_morfologia)
+        morfologia.erodir()
+        tk_image = morfologia.get_ctk_image(width=256, height=256)
+
+        label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
+        label_morfologia.pack(side='left', padx=200)
+        print("Morfologia de erosao aplicado e imagem exibida.")
+
+    elif morfologia_selecionada == "Fechamento":
+        morfologia = Fechamento(caminho_imagem_selecionado_morfologia)
+        morfologia.fechamento()
+        tk_image = morfologia.get_ctk_image(width=256, height=256)
+
+        label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
+        label_morfologia.pack(side='left', padx=200)
+        print("Morfologia de erosao aplicado e imagem exibida.")
+
+    
+    elif morfologia_selecionada == "Abertura":
+        morfologia = Abertura(caminho_imagem_selecionado_morfologia)
+        morfologia.abertura()
+        tk_image = morfologia.get_ctk_image(width=256, height=256)
+
+        label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
+        label_morfologia.pack(side='left', padx=200)
+        print("Morfologia de erosao aplicado e imagem exibida.")
+    
+    elif morfologia_selecionada == "Hit Or Miss":    
+        morfologia = HitOrMiss(caminho_imagem_selecionado_morfologia)
+        
+        elemento_estruturante = np.ones((3, 3), dtype=np.uint8)
+        
+        morfologia.hit_or_miss(elemento_estruturante)
+        
+        tk_image = morfologia.get_ctk_image(width=256, height=256)
+        
+        label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
+        label_morfologia.pack(side='left', padx=200)
+        
+        print("Morfologia de erosão aplicada e imagem exibida.")
+    
+    elif morfologia_selecionada == "Top Hat":
+        morfologia = TopHat(caminho_imagem_selecionado_morfologia)
+        morfologia.aplicar_top_hat()
+        tk_image = morfologia.get_ctk_image(width=256, height=256)
+
+        label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
+        label_morfologia.pack(side='left', padx=200)
+        print("Morfologia de erosao aplicado e imagem exibida.")
+
+    elif morfologia_selecionada == "Bottom Hat":
+        morfologia = BottomHat(caminho_imagem_selecionado_morfologia)
+        morfologia.aplicar_bottom_hat()
+        tk_image = morfologia.get_ctk_image(width=256, height=256)
+
+        label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
+        label_morfologia.pack(side='left', padx=200)
+        print("Morfologia de erosao aplicado e imagem exibida.")
+
+    else:
+        print("Selecione uma morfologia para aplicar.")
+
+
+combobox_image_morfologia = ctk.CTkComboBox(
+    container_frame_morfologia,
+    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    command=combobox_callback_image_morfologia,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image_morfologia.pack(side="left", padx=10, pady=10)
+
+combobox_var_morfologia = ctk.StringVar(value="Escolha a Morfologia")
+combobox_morfologia = ctk.CTkComboBox(
+    container_frame_morfologia,
+    values=[
+        "Dilatação", "Erosão", 
+        "Fechamento", "Abertura", 
+        "Hit Or Miss", "Top Hat", "Bottom Hat"
+    ],
+    command=combobox_callback_morfologia,
+    variable=combobox_var_morfologia,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_morfologia.pack(side="left", padx=10, pady=10)
+
+button_apply_morfologia = ctk.CTkButton(
+    container_frame_morfologia,
+    text="Aplicar Transformação",
+    command=aplicar_morfologia
+)
+button_apply_morfologia.pack(side="left", padx=10, pady=10)
 
 #====================================================================================================================
 # Inicia o loop da interface

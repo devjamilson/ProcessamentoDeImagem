@@ -1,85 +1,87 @@
 import os
 import numpy as np
 from PIL import Image
+import matplotlib.pyplot as plt
+import customtkinter as ctk
 
-class ProcessamentoImagem:
-    def __init__(self, caminho):
-        self.imagem = self.carregar_imagem_pgm(caminho)
-        
-    def carregar_imagem_pgm(self, caminho_imagem):
-        """Carrega uma imagem PGM (P2 ou P5) e retorna como um array numpy."""
-        if not os.path.exists(caminho_imagem):
-            raise FileNotFoundError(f"O arquivo não foi encontrado: {caminho_imagem}")
-
-        with open(caminho_imagem, 'rb') as f:
-            header = f.readline().strip()
-            
-            # Verifica o formato (P2 para ASCII, P5 para binário)
-            if header == b'P5':
-                # Formato binário
-                width, height = map(int, f.readline().split())
-                maxval = int(f.readline().strip())
-                
-                # Carrega a imagem em escala de cinza
-                imagem_data = np.fromfile(f, dtype=np.uint8 if maxval < 256 else np.uint16)
-                imagem = imagem_data.reshape((height, width))
-            
-            elif header == b'P2':
-                # Formato ASCII
-                width, height = map(int, f.readline().split())
-                maxval = int(f.readline().strip())
-                
-                # Carrega a imagem linha por linha em escala de cinza
-                imagem_data = []
-                for line in f:
-                    imagem_data.extend(map(int, line.split()))
-                imagem = np.array(imagem_data, dtype=np.uint8).reshape((height, width))
-            
-            else:
-                raise ValueError("Formato PGM não suportado (esperado P2 ou P5).")
-
-        return imagem
+def carregar_imagem_pgm(caminho_imagem):
+    """Carrega uma imagem PGM de um arquivo especificado."""
+    if not os.path.exists(caminho_imagem):
+        raise FileNotFoundError(f"O arquivo não foi encontrado: {caminho_imagem}")
     
-    def dilatar(self, elemento_estruturante=np.ones((3, 3), dtype=np.uint8)):
-        """
-        Aplica a dilatação morfológica usando o elemento estruturante especificado.
+    with open(caminho_imagem, 'rb') as f:
+        header = f.readline().strip()
         
-        :param elemento_estruturante: Um array numpy representando o elemento estruturante (kernel) de dilatação.
-        :return: Imagem dilatada.
-        """
-        # Pega as dimensões do elemento estruturante
-        e_height, e_width = elemento_estruturante.shape
-        padding_y, padding_x = e_height // 2, e_width // 2
+        if header == b'P5':
+            width, height = map(int, f.readline().split())
+            maxval = int(f.readline().strip())
+            imagem_data = np.fromfile(f, dtype=np.uint8 if maxval < 256 else np.uint16)
+            imagem = imagem_data.reshape((height, width))
+        
+        elif header == b'P2':
+            width, height = map(int, f.readline().split())
+            maxval = int(f.readline().strip())
+            imagem_data = []
+            for line in f:
+                imagem_data.extend(map(int, line.split()))
+            imagem = np.array(imagem_data, dtype=np.uint8).reshape((height, width))
+        
+        else:
+            raise ValueError("Formato PGM não suportado (esperado P2 ou P5).")
 
-        # Adiciona padding na imagem para aplicar a dilatação nas bordas
-        imagem_padded = np.pad(self.imagem, ((padding_y, padding_y), (padding_x, padding_x)), mode='constant', constant_values=0)
-        
-        # Cria uma matriz para a imagem dilatada
-        imagem_dilatada = np.zeros_like(self.imagem)
+    return imagem
+
+class Dilatacao:
+    def __init__(self, path: str, kernel_size: int = 3):
+        """Inicializa a classe DilationFilter com a imagem a ser dilatada e o tamanho do kernel."""
+        self.image = carregar_imagem_pgm(path)  # Carrega a imagem em tons de cinza
+        self.kernel_size = kernel_size
+        self.filtered_image = None
+        self.elemento_estruturante = np.ones((self.kernel_size, self.kernel_size), dtype=np.uint8)  # Kernel de dilatação padrão
+
+    def apply_filter(self):
+        """Aplica a dilatação morfológica na imagem."""
+        img_array = np.array(self.image)
+        padded_img = np.pad(img_array, self.kernel_size // 2, mode='constant', constant_values=0)
+        output_array = np.zeros_like(img_array)
         
         # Aplica a dilatação
-        for i in range(padding_y, imagem_padded.shape[0] - padding_y):
-            for j in range(padding_x, imagem_padded.shape[1] - padding_x):
-                # Extrai a vizinhança da imagem
-                vizinhanca = imagem_padded[i - padding_y:i + padding_y + 1, j - padding_x:j + padding_x + 1]
-                
-                # Aplica a operação de dilatação: pega o máximo da vizinhança
-                imagem_dilatada[i - padding_y, j - padding_x] = np.max(vizinhanca * elemento_estruturante)
+        for i in range(img_array.shape[0]):
+            for j in range(img_array.shape[1]):
+                # Extrai a vizinhança e aplica o elemento estruturante
+                region = padded_img[i:i + self.kernel_size, j:j + self.kernel_size]
+                output_array[i, j] = np.max(region * self.elemento_estruturante)
         
-        return imagem_dilatada
+        self.filtered_image = Image.fromarray(output_array.astype(np.uint8))
 
-# Caminho para a imagem
-caminho = r"C:\Users\jamil\OneDrive\Área de Trabalho\ProcessamentoImagem\Imagem\Utils\lena.pgm"
+    def show_images(self):
+        """Mostra a imagem original e a imagem dilatada."""
+        if self.filtered_image is None:
+            print("Primeiro aplique o filtro usando o método `apply_filter`.")
+            return
+        
+        # Configurações para mostrar as imagens lado a lado
+        plt.figure(figsize=(10, 5))
+        
+        # Imagem original
+        plt.subplot(1, 2, 1)
+        plt.title("Imagem Original")
+        plt.imshow(self.image, cmap="gray")
+        plt.axis("off")
+        
+        # Imagem com dilatação aplicada
+        plt.subplot(1, 2, 2)
+        plt.title("Imagem com Dilatação")
+        plt.imshow(self.filtered_image, cmap="gray")
+        plt.axis("off")
+        
+        plt.show()
 
-# Cria uma instância da classe
-processador = ProcessamentoImagem(caminho)
-
-# Aplica a dilatação com um elemento estruturante 3x3
-imagem_dilatada = processador.dilatar()
-
-# Converte para uma imagem PIL para exibição ou salvamento
-imagem_dilatada_pil = Image.fromarray(imagem_dilatada)
-imagem_dilatada_pil.show()
-
-# Ou, se quiser salvar:
-# imagem_dilatada_pil.save(r"C:\caminho_para_salvar\imagem_dilatada.pgm")
+    def get_ctk_image(self, width=None, height=None):
+        """Converte a imagem dilatada para CTkImage para uso no CustomTkinter."""
+        if self.filtered_image is None:
+            raise ValueError("Primeiro aplique o filtro usando o método `apply_filter`.")
+        
+        # Converte a imagem para CTkImage e mantém em memória
+        self.tk_image = ctk.CTkImage(self.filtered_image, size=(width, height))
+        return self.tk_image

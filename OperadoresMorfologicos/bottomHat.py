@@ -4,11 +4,13 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import customtkinter as ctk
 
-class HitOrMiss:
+
+
+class BottomHat:
     def __init__(self, caminho):
-        """Inicializa a classe HitOrMiss com a imagem a ser processada."""
-        self.imagem = self.carregar_imagem_pgm(caminho)  # Carrega a imagem em tons de cinza
-        self.imagem_hit_or_miss = None  # Imagem com a operação Hit-or-Miss aplicada
+        """Inicializa a classe BottomHat com a imagem a ser processada."""
+        self.imagem = self.carregar_imagem_pgm(caminho)
+        self.imagem_bottom_hat = None
 
     def carregar_imagem_pgm(self, caminho_imagem):
         """Carrega uma imagem PGM (P2 ou P5) e retorna como um array numpy."""
@@ -17,14 +19,12 @@ class HitOrMiss:
 
         with open(caminho_imagem, 'rb') as f:
             header = f.readline().strip()
-            
-            # Verifica o formato (P2 para ASCII, P5 para binário)
+
             if header == b'P5':
                 width, height = map(int, f.readline().split())
                 maxval = int(f.readline().strip())
                 imagem_data = np.fromfile(f, dtype=np.uint8 if maxval < 256 else np.uint16)
                 imagem = imagem_data.reshape((height, width))
-            
             elif header == b'P2':
                 width, height = map(int, f.readline().split())
                 maxval = int(f.readline().strip())
@@ -32,11 +32,21 @@ class HitOrMiss:
                 for line in f:
                     imagem_data.extend(map(int, line.split()))
                 imagem = np.array(imagem_data, dtype=np.uint8).reshape((height, width))
-            
             else:
                 raise ValueError("Formato PGM não suportado (esperado P2 ou P5).")
 
         return imagem
+
+    def aplicar_bottom_hat(self, elemento_estruturante=np.ones((3, 3), dtype=np.uint8)):
+        """Aplica a operação Bottom-Hat usando o elemento estruturante especificado."""
+        imagem_dilatada = self.dilatar(self.imagem, elemento_estruturante)  # Passa self.imagem como parâmetro
+        imagem_erodida = self.erodir(elemento_estruturante)
+        if imagem_dilatada.shape == imagem_erodida.shape:
+            self.imagem_bottom_hat = imagem_dilatada - imagem_erodida
+        else:
+            raise ValueError("Erro: As dimensões de imagem_dilatada e imagem_erodida não coincidem.")
+        return self.imagem_bottom_hat
+
 
     def erodir(self, elemento_estruturante=np.ones((3, 3), dtype=np.uint8)):
         """
@@ -55,58 +65,45 @@ class HitOrMiss:
                 vizinhanca = imagem_padded[i - padding_y:i + padding_y + 1, j - padding_x:j + padding_x + 1]
                 imagem_erodida[i - padding_y, j - padding_x] = np.min(vizinhanca * elemento_estruturante)
         
-        return imagem_erodida
+        self.imagem_erodida = imagem_erodida  # Salva a imagem erodida internamente para uso posterior
+        return self.imagem_erodida
 
-    def hit_or_miss(self, elemento_estruturante):
-        """
-        Aplica a operação Hit-or-Miss usando o elemento estruturante especificado.
+    def dilatar(self, imagem, elemento_estruturante=np.ones((3, 3), dtype=np.uint8)):
+        e_height, e_width = elemento_estruturante.shape
+        padding_y, padding_x = e_height // 2, e_width // 2
+        imagem_padded = np.pad(imagem, ((padding_y, padding_y), (padding_x, padding_x)), mode='constant', constant_values=0)
+        imagem_dilatada = np.zeros_like(imagem)
+
+        for i in range(padding_y, imagem_padded.shape[0] - padding_y):
+            for j in range(padding_x, imagem_padded.shape[1] - padding_x):
+                vizinhanca = imagem_padded[i - padding_y:i + padding_y + 1, j - padding_x:j + padding_x + 1]
+                imagem_dilatada[i - padding_y, j - padding_x] = np.max(vizinhanca * elemento_estruturante)
         
-        :param elemento_estruturante: Um array numpy representando o elemento estruturante.
-        :return: Resultado da operação Hit-or-Miss.
-        """
-        # Define o complemento do elemento estruturante
-        complemento = np.ones_like(elemento_estruturante) - elemento_estruturante
+        return imagem_dilatada
 
-        # Erosão do elemento estruturante
-        imagem_erodida = self.erodir(elemento_estruturante)
-        # Erosão do complemento do elemento estruturante
-        imagem_complemento_erodido = self.erodir(complemento)
-
-        # A operação Hit-or-Miss é a interseção das duas erosiões
-        hit_or_miss_result = np.where((imagem_erodida == np.min(elemento_estruturante)) & (imagem_complemento_erodido == 255), 255, 0)
-
-        self.imagem_hit_or_miss = hit_or_miss_result  # Salva a imagem resultante internamente para uso posterior
-        return self.imagem_hit_or_miss
 
     def show_images(self):
-        """Mostra a imagem original e a imagem com Hit-or-Miss aplicada lado a lado."""
-        if self.imagem_hit_or_miss is None:
-            print("Primeiro aplique a operação Hit-or-Miss usando o método `hit_or_miss`.") 
+        """Mostra a imagem original e a imagem Bottom-Hat lado a lado."""
+        if self.imagem_bottom_hat is None:
+            print("Primeiro aplique a operação Bottom-Hat usando o método `aplicar_bottom_hat`.")
             return
-        
-        # Configurações para mostrar as imagens lado a lado
+
         plt.figure(figsize=(10, 5))
-        
-        # Imagem original
         plt.subplot(1, 2, 1)
         plt.title("Imagem Original")
         plt.imshow(self.imagem, cmap="gray")
         plt.axis("off")
-        
-        # Imagem com Hit-or-Miss aplicada
+
         plt.subplot(1, 2, 2)
-        plt.title("Imagem com Hit-or-Miss")
-        plt.imshow(self.imagem_hit_or_miss, cmap="gray")
+        plt.title("Imagem Bottom-Hat")
+        plt.imshow(self.imagem_bottom_hat, cmap="gray")
         plt.axis("off")
-        
         plt.show()
 
     def get_ctk_image(self, width=None, height=None):
-        """Converte a imagem resultante de Hit-or-Miss para CTkImage para uso no CustomTkinter."""
-        if self.imagem_hit_or_miss is None:
-            raise ValueError("Primeiro aplique a operação Hit-or-Miss usando o método `hit_or_miss`.")
+        """Converte a imagem Bottom-Hat para CTkImage para uso no CustomTkinter."""
+        if self.imagem_bottom_hat is None:
+            raise ValueError("Primeiro aplique a operação Bottom-Hat usando o método `aplicar_bottom_hat`.")
         
-        # Converte a imagem resultante para PIL e então para CTkImage
-        imagem_hit_or_miss_pil = Image.fromarray(self.imagem_hit_or_miss)
-        self.tk_image = ctk.CTkImage(imagem_hit_or_miss_pil, size=(width, height))
-        return self.tk_image
+        imagem_bottom_hat_pil = Image.fromarray(self.imagem_bottom_hat)
+        return ctk.CTkImage(imagem_bottom_hat_pil, size=(width, height))

@@ -1,1 +1,2 @@
-10
+
+    elif morfologia_selecionada == "Abertura":
