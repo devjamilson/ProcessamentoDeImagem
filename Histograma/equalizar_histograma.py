@@ -2,6 +2,7 @@ import os
 import numpy as np
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
+import io
 import customtkinter as ctk
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
@@ -89,6 +90,45 @@ class EqualizadorHistograma:
         
         plt.tight_layout()
         plt.show()
+    
+    def mostrar_histograma_equalizado(self, tab):
+        """Exibe o histograma da imagem equalizada diretamente em uma CTkLabel."""
+        if self.imagem_equalizada is None:
+            print("A imagem não foi equalizada. Execute o método `equalizar` primeiro.")
+            return
+
+        # Remove o histograma anterior se existir
+        if hasattr(self, 'label_histograma_equalizado') and self.label_histograma_equalizado is not None:
+            self.label_histograma_equalizado.destroy()
+
+        # Converte a imagem equalizada para um array numpy para processamento
+        np_imagem_equalizada = np.array(self.imagem_equalizada)
+
+        # Calcula o histograma da imagem equalizada
+        histograma, bins = np.histogram(np_imagem_equalizada.flatten(), bins=256, range=[0, 256])
+
+        # Cria uma figura do histograma e salva como imagem no buffer
+        fig, ax = plt.subplots(figsize=(5, 3))  # Ajuste o tamanho conforme necessário
+        ax.bar(bins[:-1], histograma, width=1, color='gray')
+        ax.set_title("Histograma Equalizado")
+        ax.set_xlabel("Intensidade dos Pixels")
+        ax.set_ylabel("Número de Pixels")
+        ax.set_xlim([0, 256])
+
+        # Salva a figura em um buffer de memória
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png')
+        buf.seek(0)
+        plt.close(fig)  # Fecha a figura para liberar memória
+
+        # Converte a imagem do buffer para PIL e depois para CTkImage
+        histograma_imagem = Image.open(buf)
+        ctk_histograma_imagem = ctk.CTkImage(histograma_imagem, size=(440, 250))  # Ajuste o tamanho conforme necessário
+
+        # Exibe na CTkLabel dentro do tab especificado
+        self.label_histograma_equalizado = ctk.CTkLabel(tab, image=ctk_histograma_imagem, text="")
+        self.label_histograma_equalizado.pack(side='left')
+
 
     def get_ctk_image(self, width=None, height=None):
         """Converte a imagem equalizada para CTkImage para uso no CustomTkinter."""

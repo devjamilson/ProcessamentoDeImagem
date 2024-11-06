@@ -258,7 +258,6 @@ def combobox_callback_transformacao(choice):
     print("Combobox dropdown clicked filtro:", choice)
     transformacao_selecionada = choice
 
-
 # Função para aplicar o filtro selecionado e exibir a imagem resultante
 def aplicar_transformacao():
     global transformacao_selecionada, caminho_imagem_selecionado_transformacoes, label_transformacao  # Incluindo label como global
@@ -359,22 +358,55 @@ button_apply_transformacao.pack(side="left", padx=10, pady=10)
 #********************************************************************************************************************
 #HISTOGRAMA
 #********************************************************************************************************************
-
-#HEADER
+# HEADER
 container_frame_histograma = ctk.CTkFrame(tabview.tab("Histograma"))
 container_frame_histograma.pack(padx=10, pady=10, fill="x")
 
-#usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
-#Instância da Classe 
-visualizador_histograma_eq = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
-visualizador_histograma_eq.exibir_img_histo(tabview.tab("Histograma"))
+# Frame superior dentro do container para exibir a imagem e o histograma lado a lado
+frame_superior_histograma = ctk.CTkFrame(
+    tabview.tab("Histograma"), width=1000, height=300, fg_color='#f3f3f3'
+)
+frame_superior_histograma.pack( fill="x")
+
+# Frame para a imagem na parte esquerda do frame superior
+frame_imagem = ctk.CTkFrame(
+    frame_superior_histograma, width=500, height=300,  fg_color='#f3f3f3'
+)
+frame_imagem.pack(side="left", fill="both", expand=True)
+
+# Frame para o histograma na parte direita do frame superior
+frame_histograma = ctk.CTkFrame(
+    frame_superior_histograma, width=500, height=300,  fg_color='#f3f3f3'
+)
+frame_histograma.pack(side="left", fill="both", expand=True)
+
+# Frame inferior dentro do container para seleção de filtros e botões
+frame_inferior_histograma = ctk.CTkFrame(
+    tabview.tab("Histograma"), width=1000, height=300,  fg_color='#f3f3f3'
+)
+frame_inferior_histograma.pack( fill="x")
 
 
+frame_imagem_inf = ctk.CTkFrame(
+    frame_inferior_histograma, width=500, height=300,  fg_color='#f3f3f3'
+)
+frame_imagem_inf.pack(side="left", fill="both", expand=True)
+
+
+frame_histograma_inf = ctk.CTkFrame(
+    frame_inferior_histograma, width=500, height=300,  fg_color='#f3f3f3'
+)
+frame_histograma_inf.pack(side="left", fill="both", expand=True)
+
+# Instância da Classe VisualizadorImagemCustomTk para visualizar a imagem
+visualizador_histograma_eq = VisualizadorImagemCustomTk(frame_imagem, caminho_imagem)
+visualizador_histograma_eq.exibir_img_histo(frame_imagem)
 
 # Variáveis globais para manter seleção de filtro e caminho de imagem
 caminho_imagem_selecionado_histograma = None
 label_histograma = None
-
+label_imagem_equalizada = None
+label_histograma_equalizado = None
 
 # Função chamada no Select das imagens
 def combobox_callback_image_histograma(choice):
@@ -382,23 +414,38 @@ def combobox_callback_image_histograma(choice):
     print("Combobox dropdown clicked imagem:", choice)
     caminho_imagem_selecionado_histograma = os.path.join(diretorio_imagens, choice)
     visualizador_histograma_eq.exibir_imagem_histo(caminho_imagem_selecionado_histograma)
-    visualizador_histograma_eq.mostrar_histograma(tabview.tab("Histograma"))
+    visualizador_histograma_eq.mostrar_histograma(frame_histograma)
+
 
 def equalizar_imagem():
-    global label_histograma, caminho_imagem_selecionado_histograma
+    global label_histograma, label_imagem_equalizada, label_histograma_equalizado, caminho_imagem_selecionado_histograma
 
-    if label_histograma is not None:
-        label_histograma.destroy()
+    # Remove os widgets anteriores da imagem e do histograma equalizado, se existirem
+    if label_imagem_equalizada is not None:
+        label_imagem_equalizada.destroy()
+    if label_histograma_equalizado is not None:
+        label_histograma_equalizado.destroy()
 
+    # Equaliza a imagem selecionada
     Equalizada = EqualizadorHistograma(caminho_imagem_selecionado_histograma)
     Equalizada.equalizar()
-    tk_image = Equalizada.get_ctk_image(width=256, height=256)
+    tk_image_equalizada = Equalizada.get_ctk_image(width=256, height=256)
 
-    label_histograma = ctk.CTkLabel(tabview.tab("Histograma"), image=tk_image, text="")
-    label_histograma.pack(side='left'); 
-    print("Imagem Equalizada")
+    # Exibe a imagem equalizada no frame inferior
+    label_imagem_equalizada = ctk.CTkLabel(frame_imagem_inf, image=tk_image_equalizada, text="", bg_color='red')
+    label_imagem_equalizada.pack(side='left', padx=200, pady=10)
 
-combobox_image_histograma= ctk.CTkComboBox(
+    # Remover todos os widgets de histograma antes de exibir o novo
+    for widget in frame_histograma_inf.winfo_children():
+        widget.destroy()
+
+    # Exibe o histograma da imagem equalizada
+    Equalizada.mostrar_histograma_equalizado(frame_histograma_inf)
+    print("Imagem Equalizada e Histograma exibidos")
+
+
+# Combobox para selecionar a imagem
+combobox_image_histograma = ctk.CTkComboBox(
     container_frame_histograma,
     values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
     command=combobox_callback_image_histograma,
@@ -407,13 +454,13 @@ combobox_image_histograma= ctk.CTkComboBox(
 )
 combobox_image_histograma.pack(side="left", padx=10, pady=10)
 
+# Botão para aplicar equalização na imagem
 button_apply_histograma = ctk.CTkButton(
     container_frame_histograma,
     text="Equalizar Imagem",
     command=equalizar_imagem
 )
 button_apply_histograma.pack(side="left", padx=10, pady=10)
-
 
 
 #********************************************************************************************************************
@@ -447,7 +494,6 @@ def combobox_callback_morfologia(choice):
     global morfologia_selecionada
     print("Combobox dropdown clicked filtro:", choice)
     morfologia_selecionada = choice
-
 
 def aplicar_morfologia():
     global morfologia_selecionada, caminho_imagem_selecionado_morfologia, label_morfologia  # Incluindo label como global
@@ -526,7 +572,6 @@ def aplicar_morfologia():
 
     else:
         print("Selecione uma morfologia para aplicar.")
-
 
 combobox_image_morfologia = ctk.CTkComboBox(
     container_frame_morfologia,

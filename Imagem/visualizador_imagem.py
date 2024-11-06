@@ -13,6 +13,7 @@ class VisualizadorImagemCustomTk:
         self.caminho_imagem = caminho_imagem
         self.imagem = self.carregar_imagem()
         self.label_imagem = None  # Inicializa o label como None
+        self.label_histograma = None  
 
     def carregar_imagem(self):
         """Carrega uma imagem PGM (P2 ou P5) e converte para um objeto CTkImage."""
@@ -71,7 +72,7 @@ class VisualizadorImagemCustomTk:
                 if self.label_imagem is None:
                     # Cria o label apenas na primeira vez
                     self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
-                    self.label_imagem.pack(side='top', anchor='nw', padx=200, pady=10)
+                    self.label_imagem.pack(side='top', anchor='nw', padx=200)
 
                 else:
                     # Atualiza a imagem no label já existente
@@ -128,7 +129,7 @@ class VisualizadorImagemCustomTk:
         if not hasattr(self, 'label_histograma') or self.label_histograma is None:
             # Cria a label apenas na primeira vez
             self.label_histograma = ctk.CTkLabel(tab, image=ctk_histograma_imagem, text="")
-            self.label_histograma.pack(side='top', anchor='ne')
+            self.label_histograma.pack(side='left')
         else:
             # Atualiza a imagem no label já existente
             self.label_histograma.configure(image=ctk_histograma_imagem)
