@@ -12,12 +12,7 @@ class VisualizadorImagemCustomTk:
         self.master = master
         self.caminho_imagem = caminho_imagem
         self.imagem = self.carregar_imagem()
-        self.imagem1 = self.carregar_imagem()
-        self.imagem2 = self.carregar_imagem()
         self.label_imagem = None  # Inicializa o label como None
-        
-        self.label_imagem1 = None  # Inicializa o label como None
-        self.label_imagem2 = None  # Inicializa o label como None
         self.label_histograma = None  
 
     def carregar_imagem(self):
@@ -58,13 +53,18 @@ class VisualizadorImagemCustomTk:
             print(f"Erro ao carregar a imagem: {e}")
             return None
 
-    def exibir(self, tab):
+    def exibir(self, tab, selecao="Filtros"):
         """Exibe a imagem carregada no widget CTkLabel no tabview especificado."""
         if self.imagem is not None:
             if self.label_imagem is None:
+                
                 # Cria o label apenas na primeira vez
-                self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
-                self.label_imagem.pack(side='left', padx=200)
+                if selecao == "Filtros":
+                    self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
+                    self.label_imagem.pack(side='left', padx=200)
+                elif selecao == "Operacao": 
+                    self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
+                    self.label_imagem.pack(side='left', padx=50)    
             else:
                 # Atualiza a imagem no label já existente
                 self.label_imagem.configure(image=self.imagem)

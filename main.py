@@ -3,6 +3,7 @@ from PIL import Image
 from PIL import ImageTk
 import numpy as np
 from Imagem.visualizador_imagem import VisualizadorImagemCustomTk
+from Imagem.img2 import VisualizadorImagem2
 from Filtros.filtro_suavizacao_mediana import MedianFilter 
 from Filtros.filtro_suavizacao_media import MediaFilter
 from Filtros.filtro_passa_alta_basico import HighPassFilter
@@ -31,7 +32,7 @@ from Operações.matematicas import OperacoesMatematicas
 from Operações.logicas import OperacoesLogicas
 
 
-from Histograma.equalizar_histograma import EqualizadorHistograma, carregar_imagem_pgm
+from Histograma.equalizar_histograma import EqualizadorHistograma
 import os
 
 #====================================================================================================================
@@ -54,6 +55,7 @@ tabview.add("Operações")
 tabview.add("Transformações")
 tabview.add("Histograma")
 tabview.add("Morfologia")
+
 #====================================================================================================================
 # Adicionando Funcionandalidades Nas Abas
 #====================================================================================================================
@@ -72,7 +74,7 @@ container_frame.pack(padx=10, pady=10, fill="x")
 visualizador = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
 
 #imagem padrão
-visualizador.exibir(tabview.tab("Filtros"))
+visualizador.exibir(tabview.tab("Filtros"), 'Filtros')
 #visualizador.exibir_imagem_transformada(tabview.tab("Filtros"), imagem_transformada= )
 
 # Variáveis globais para manter seleção de filtro e caminho de imagem
@@ -88,6 +90,8 @@ def combobox_callback_image(choice):
     print("Combobox dropdown clicked imagem:", choice)
     caminho_imagem_selecionado = os.path.join(diretorio_imagens, choice)
     visualizador.exibir_imagem(caminho_imagem_selecionado)
+
+    print(tabview.tab("Transformações"))
 
 
 def combobox_callback(choice):
@@ -243,7 +247,11 @@ container_frame_operacoes.pack(padx=10, pady=10, fill="x")
 #usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
 #Instância da Classe 
 visualizador_operacoes = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
-visualizador_operacoes.exibir(tabview.tab("Operações"))
+visualizador_operacoes.exibir(tabview.tab("Operações"), 'Operacao')
+
+
+visualizador_operacoes2 = VisualizadorImagem2(container_frame, caminho_imagem)
+visualizador_operacoes2.exibir2(tabview.tab("Operações"))
 
 # Variáveis globais para manter seleção de filtro e caminho de imagem
 operacao_selecionada = None
@@ -257,16 +265,15 @@ def combobox_callback_image1_operacao(choice):
     global caminho_imagem1_selecionado_operacao
     print("Combobox dropdown clicked imagem:", choice)
     caminho_imagem1_selecionado_operacao = os.path.join(diretorio_imagens, choice)
-    visualizador_operacoes.exibir_imagem1(caminho_imagem1_selecionado_operacao)
-
+    visualizador_operacoes.exibir_imagem(caminho_imagem1_selecionado_operacao)
 
 def combobox_callback_image2_operacao(choice):
     global caminho_imagem2_selecionado_operacao
     print("Combobox dropdown clicked imagem:", choice)
     caminho_imagem2_selecionado_operacao = os.path.join(diretorio_imagens, choice)
-    visualizador_operacoes.exibir_imagem2(caminho_imagem2_selecionado_operacao)
+    visualizador_operacoes2.exibir_imagem2(caminho_imagem2_selecionado_operacao)
 
-def combobox_callback_transformacao(choice):
+def combobox_callback_operacao(choice):
     global operacao_selecionada
     print("Combobox dropdown clicked filtro:", choice)
     operacao_selecionada = choice
@@ -380,7 +387,7 @@ combobox_operacao = ctk.CTkComboBox(
         "Multiplicação", "Divisão", 
         "OR", "AND", "XOR"
     ],
-    command=combobox_callback_transformacao,
+    command=combobox_callback_operacao,
     variable=combobox_var_operacao,
     width=270,
     font=("Helvetica", 14),
@@ -405,7 +412,7 @@ container_frame_transformacao.pack(padx=10, pady=10, fill="x")
 #usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
 #Instância da Classe 
 visualizador_transformacao = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
-visualizador_transformacao.exibir(tabview.tab("Transformações"))
+visualizador_transformacao.exibir(tabview.tab("Transformações"), 'Filtros')
 
 # Variáveis globais para manter seleção de filtro e caminho de imagem
 transformacao_selecionada = None
@@ -614,7 +621,7 @@ def equalizar_imagem():
 # Combobox para selecionar a imagem
 combobox_image_histograma = ctk.CTkComboBox(
     container_frame_histograma,
-    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    values=["lena.pgm", "Airplane.pgm"],
     command=combobox_callback_image_histograma,
     width=270,
     font=("Helvetica", 14),
@@ -641,7 +648,7 @@ container_frame_morfologia.pack(padx=10, pady=10, fill="x")
 #usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
 #Instância da Classe 
 visualizador_morfologia = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
-visualizador_morfologia.exibir(tabview.tab("Morfologia"))
+visualizador_morfologia.exibir(tabview.tab("Morfologia"), 'Filtros')
 
 
 # Variáveis globais para manter seleção de filtro e caminho de imagem

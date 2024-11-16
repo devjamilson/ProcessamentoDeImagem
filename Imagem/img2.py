@@ -1,24 +1,24 @@
 import os
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 import customtkinter as ctk
 
 # Classe para visualizar imagens PGM em Customtkinter
-class VisualizadorImagemCustomTk:
-    def __init__(self, master, caminho_imagem):
-        self.master = master
-        self.caminho_imagem = caminho_imagem
-        self.imagem = self.carregar_imagem()
-        self.label_imagem = None  # Inicializa o label como None
+class VisualizadorImagem2:
+
+    def __init__(self, master2, caminho_imagem2):
+        self.master2 = master2
+        self.caminho_imagem2 = caminho_imagem2
+        self.imagem2 = self.carregar_imagem()
+        self.label_imagem2 = None  # Inicializa o label como None 
 
     def carregar_imagem(self):
         """Carrega uma imagem PGM (P2 ou P5) e converte para um objeto CTkImage."""
-        if not os.path.exists(self.caminho_imagem):
-            raise FileNotFoundError(f"O arquivo não foi encontrado: {self.caminho_imagem}")
+        if not os.path.exists(self.caminho_imagem2):
+            raise FileNotFoundError(f"O arquivo não foi encontrado: {self.caminho_imagem2}")
 
         try:
-            with open(self.caminho_imagem, 'rb') as f:
+            with open(self.caminho_imagem2, 'rb') as f:
                 header = f.readline().strip()
                 
                 # Verifica o formato (P2 para ASCII, P5 para binário)
@@ -50,37 +50,24 @@ class VisualizadorImagemCustomTk:
             print(f"Erro ao carregar a imagem: {e}")
             return None
 
-    def exibir(self, tab):
+    def exibir2(self, tab):
         """Exibe a imagem carregada no widget CTkLabel no tabview especificado."""
-        if self.imagem is not None:
-            if self.label_imagem is None:
+        if self.imagem2 is not None:
+            if self.label_imagem2 is None:
                 # Cria o label apenas na primeira vez
-                self.label_imagem = ctk.CTkLabel(tab, image=self.imagem, text="")
-                self.label_imagem.pack(pady=10)
+                self.label_imagem2 = ctk.CTkLabel(tab, image=self.imagem2, text="")
+                self.label_imagem2.pack(side='left')
             else:
                 # Atualiza a imagem no label já existente
-                self.label_imagem.configure(image=self.imagem)
+                self.label_imagem2.configure(image=self.imagem2)
+                    
         else:
             print("Não foi possível carregar a imagem.")
 
-    def exibir_imagem(self, novo_caminho_imagem):
-        """Atualiza a imagem exibida com um novo caminho de imagem."""
-        self.caminho_imagem = novo_caminho_imagem
-        self.imagem = self.carregar_imagem()
-        self.exibir(self.master)  # Atualiza a imagem exibida
 
-    def mostrar_histograma(self):
-        """Exibe o histograma da imagem carregada."""
-        if self.imagem is None:
-            print("Nenhuma imagem carregada para exibir o histograma.")
-            return
-        
-        histograma, bins = np.histogram(self.imagem.flatten(), bins=256, range=[0, 256])
-        
-        plt.figure(figsize=(10, 5))
-        plt.title("Histograma da Imagem PGM")
-        plt.xlabel("Intensidade dos Pixels")
-        plt.ylabel("Número de Pixels")
-        plt.xlim([0, 256])
-        plt.bar(bins[:-1], histograma, width=1, color='gray')
-        plt.show()
+    def exibir_imagem2(self, novo_caminho_imagem):
+        """Atualiza a imagem exibida com um novo caminho de imagem."""
+        self.caminho_imagem2 = novo_caminho_imagem
+        self.imagem2 = self.carregar_imagem()
+        self.exibir2(self.master2)  # Atualiza a imagem exibida
+
