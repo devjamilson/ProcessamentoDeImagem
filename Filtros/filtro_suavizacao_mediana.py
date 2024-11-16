@@ -8,7 +8,7 @@ import tkinter as tk
 def carregar_imagem_pgm(caminho_imagem):
     if not os.path.exists(caminho_imagem):
         raise FileNotFoundError(f"O arquivo não foi encontrado: {caminho_imagem}")
-    
+       
     with open(caminho_imagem, 'rb') as f:
         header = f.readline().strip()
         
