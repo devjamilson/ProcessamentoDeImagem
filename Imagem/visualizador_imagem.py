@@ -12,7 +12,12 @@ class VisualizadorImagemCustomTk:
         self.master = master
         self.caminho_imagem = caminho_imagem
         self.imagem = self.carregar_imagem()
+        self.imagem1 = self.carregar_imagem()
+        self.imagem2 = self.carregar_imagem()
         self.label_imagem = None  # Inicializa o label como None
+        
+        self.label_imagem1 = None  # Inicializa o label como None
+        self.label_imagem2 = None  # Inicializa o label como None
         self.label_histograma = None  
 
     def carregar_imagem(self):
@@ -63,6 +68,7 @@ class VisualizadorImagemCustomTk:
             else:
                 # Atualiza a imagem no label já existente
                 self.label_imagem.configure(image=self.imagem)
+                    
         else:
             print("Não foi possível carregar a imagem.")
 

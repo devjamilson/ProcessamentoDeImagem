@@ -18,7 +18,6 @@ from Transformações.logaritmo import Log
 from Transformações.sigmoide import Sigmoide
 from Transformações.faixaDinamica import FaixaDinamica
 
-
 from OperadoresMorfologicos.dilatacao import Dilatacao
 from OperadoresMorfologicos.erosao import Erosao
 from OperadoresMorfologicos.abertura import Abertura
@@ -26,6 +25,11 @@ from OperadoresMorfologicos.fechamento import Fechamento
 from OperadoresMorfologicos.topHat import TopHat
 from OperadoresMorfologicos.bottomHat import BottomHat
 from OperadoresMorfologicos.hitOrMiss import HitOrMiss
+
+
+from Operações.matematicas import OperacoesMatematicas
+from Operações.logicas import OperacoesLogicas
+
 
 from Histograma.equalizar_histograma import EqualizadorHistograma, carregar_imagem_pgm
 import os
@@ -46,6 +50,7 @@ tabview = ctk.CTkTabview(janela, width=1370, height=700, fg_color="#f2f2f2")
 tabview.pack(pady=20, padx=20, fill="both", expand=True)
 # Adicionando as abas
 tabview.add("Filtros")
+tabview.add("Operações")
 tabview.add("Transformações")
 tabview.add("Histograma")
 tabview.add("Morfologia")
@@ -226,6 +231,168 @@ button_apply = ctk.CTkButton(
     command=aplicar_filtro
 )
 button_apply.pack(side="left", padx=10, pady=10)
+
+#********************************************************************************************************************
+#OPERAÇÕES 
+#********************************************************************************************************************
+
+#HEADER
+container_frame_operacoes = ctk.CTkFrame(tabview.tab("Operações"))
+container_frame_operacoes.pack(padx=10, pady=10, fill="x")
+
+#usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
+#Instância da Classe 
+visualizador_operacoes = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
+visualizador_operacoes.exibir(tabview.tab("Operações"))
+
+# Variáveis globais para manter seleção de filtro e caminho de imagem
+operacao_selecionada = None
+caminho_imagem1_selecionado_operacao = None
+caminho_imagem2_selecionado_operacao = None
+label_operacao = None
+
+
+# Função chamada no Select das imagens
+def combobox_callback_image1_operacao(choice):
+    global caminho_imagem1_selecionado_operacao
+    print("Combobox dropdown clicked imagem:", choice)
+    caminho_imagem1_selecionado_operacao = os.path.join(diretorio_imagens, choice)
+    visualizador_operacoes.exibir_imagem1(caminho_imagem1_selecionado_operacao)
+
+
+def combobox_callback_image2_operacao(choice):
+    global caminho_imagem2_selecionado_operacao
+    print("Combobox dropdown clicked imagem:", choice)
+    caminho_imagem2_selecionado_operacao = os.path.join(diretorio_imagens, choice)
+    visualizador_operacoes.exibir_imagem2(caminho_imagem2_selecionado_operacao)
+
+def combobox_callback_transformacao(choice):
+    global operacao_selecionada
+    print("Combobox dropdown clicked filtro:", choice)
+    operacao_selecionada = choice
+
+# Função para aplicar o operacao selecionado e exibir a imagem resultante
+def aplicar_operacao():
+    global operacao_selecionada, caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao, label_operacao  # Incluindo label como global
+    
+
+    print("Valor de filtro selecionado:", operacao_selecionada)
+    print("Valor de caminho da imagem 1:", caminho_imagem1_selecionado_operacao)
+    print("Valor de caminho da imagem 2:", caminho_imagem2_selecionado_operacao)
+
+     
+    if label_operacao is not None:
+       label_operacao.destroy() 
+
+    if operacao_selecionada == "Soma":
+       operacao = OperacoesMatematicas(caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao)
+       operacao.soma()
+       tk_image = operacao.get_ctk_image(width=256, height=256)
+        
+       label_operacao = ctk.CTkLabel(tabview.tab("Operações"), image=tk_image, text="")
+       label_operacao.pack(side='left', padx=200); 
+       print("Operação de soma entre as duas imagens aplicada.")
+
+    elif operacao_selecionada == "Subtração":
+       operacao = OperacoesMatematicas(caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao)
+       operacao.subtracao()
+       tk_image = operacao.get_ctk_image(width=256, height=256)
+        
+       label_operacao = ctk.CTkLabel(tabview.tab("Operações"), image=tk_image, text="")
+       label_operacao.pack(side='left', padx=200); 
+       print("Operação de subtração entre as duas imagens aplicada.")
+
+    elif operacao_selecionada == "Multiplicação":
+       operacao = OperacoesMatematicas(caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao)
+       operacao.multiplicacao()
+       tk_image = operacao.get_ctk_image(width=256, height=256)
+        
+       label_operacao = ctk.CTkLabel(tabview.tab("Operações"), image=tk_image, text="")
+       label_operacao.pack(side='left', padx=200); 
+       print("Operação de multiplicacao entre as duas imagens aplicada.")
+    
+    elif operacao_selecionada == "Divisão":
+       operacao = OperacoesMatematicas(caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao)
+       operacao.divisao()
+       tk_image = operacao.get_ctk_image(width=256, height=256)
+        
+       label_operacao = ctk.CTkLabel(tabview.tab("Operações"), image=tk_image, text="")
+       label_operacao.pack(side='left', padx=200); 
+       print("Operação de divisão entre as duas imagens aplicada.")
+
+    elif operacao_selecionada == "OR":
+       operacao = OperacoesLogicas(caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao)
+       operacao.or_logico()
+       tk_image = operacao.get_ctk_image(width=256, height=256)
+        
+       label_operacao = ctk.CTkLabel(tabview.tab("Operações"), image=tk_image, text="")
+       label_operacao.pack(side='left', padx=200); 
+       print("Operação de OR entre as duas imagens aplicada.")
+
+
+    elif operacao_selecionada == "AND":
+       operacao = OperacoesLogicas(caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao)
+       operacao.and_logico()
+       tk_image = operacao.get_ctk_image(width=256, height=256)
+        
+       label_operacao = ctk.CTkLabel(tabview.tab("Operações"), image=tk_image, text="")
+       label_operacao.pack(side='left', padx=200); 
+       print("Operação de AND entre as duas imagens aplicada.")
+
+    elif operacao_selecionada == "XOR":
+       operacao = OperacoesLogicas(caminho_imagem1_selecionado_operacao, caminho_imagem2_selecionado_operacao)
+       operacao.xor_logico()
+       tk_image = operacao.get_ctk_image(width=256, height=256)
+        
+       label_operacao = ctk.CTkLabel(tabview.tab("Operações"), image=tk_image, text="")
+       label_operacao.pack(side='left', padx=200); 
+       print("Operação de XOR entre as duas imagens aplicada.")
+
+    
+    else:
+        print("Selecione uma transformação para aplicar.")
+
+
+combobox_image_operacao1 = ctk.CTkComboBox(
+    container_frame_operacoes,
+    values=["lena.pgm", "Airplane.pgm"],
+    command=combobox_callback_image1_operacao,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image_operacao1.pack(side="left", padx=10, pady=10)
+
+
+combobox_image_operacao2 = ctk.CTkComboBox(
+    container_frame_operacoes,
+    values=["lena.pgm", "Airplane.pgm"],
+    command=combobox_callback_image2_operacao,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_image_operacao2.pack(side="left", padx=10, pady=10)
+
+combobox_var_operacao = ctk.StringVar(value="Escolha a Operação")
+combobox_operacao = ctk.CTkComboBox(
+    container_frame_operacoes,
+    values=[
+        "Soma", "Subtração", 
+        "Multiplicação", "Divisão", 
+        "OR", "AND", "XOR"
+    ],
+    command=combobox_callback_transformacao,
+    variable=combobox_var_operacao,
+    width=270,
+    font=("Helvetica", 14),
+)
+combobox_operacao.pack(side="left", padx=10, pady=10)
+
+button_apply_operacao = ctk.CTkButton(
+    container_frame_operacoes,
+    text="Aplicar Operação",
+    command=aplicar_operacao
+)
+button_apply_operacao.pack(side="left", padx=10, pady=10)
 
 
 #********************************************************************************************************************
