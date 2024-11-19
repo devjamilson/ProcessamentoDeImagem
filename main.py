@@ -8,6 +8,7 @@ from Filtros.filtro_suavizacao_mediana import MedianFilter
 from Filtros.filtro_suavizacao_media import MediaFilter
 from Filtros.filtro_passa_alta_basico import HighPassFilter
 from Filtros.filtro_operador_sobel import SobelFilter
+from Filtros.filtro_operador_sobel_magnitude import SobelMagFilter
 from Filtros.filtro_operador_prewitt import PrewittFilter
 from Filtros.filtro_operador_de_prewitt_magnitude import PrewittMagnitudeFilter
 from Filtros.filtro_de_alto_reforco import HighBoostFilter
@@ -18,6 +19,7 @@ from Transformações.gama import Gama
 from Transformações.logaritmo import Log
 from Transformações.sigmoide import Sigmoide
 from Transformações.faixaDinamica import FaixaDinamica
+from Transformações.transferenciaLinear import LinearTransfer
 
 from OperadoresMorfologicos.dilatacao import Dilatacao
 from OperadoresMorfologicos.erosao import Erosao
@@ -158,6 +160,22 @@ def aplicar_filtro():
 
         print("Filtro de Sobel aplicado e imagens exibidas.")
 
+    elif filtro_selecionado == "Filtro Operador de Sobel - Magnitude":
+        filtro = SobelMagFilter(caminho_imagem_selecionado)  # Usando a classe SobelFilter
+        filtro.apply_filter()  # Aplica o filtro de Sobel para calcular Gx e Gy
+        filtro.apply_magnitude()  # Calcula a magnitude do gradiente
+
+        # Obtendo as imagens de magnitude e gradientes (opcional, pode omitir Gx e Gy se não forem necessários)
+        _, _, tk_magnitude = filtro.get_ctk_images(width=256, height=256)
+
+        # Exibindo a imagem de magnitude
+        label = ctk.CTkLabel(tabview.tab("Filtros"), image=tk_magnitude, text="")
+        label.pack(side='left', padx=10)
+
+        print("Filtro de Sobel (Magnitude) aplicado e imagem exibida.")
+
+
+
     elif filtro_selecionado == "Filtro Operador de Prewitt":
         filtro = PrewittFilter(caminho_imagem_selecionado)  # Usando a classe SobelFilter
         filtro.apply_filter()
@@ -218,9 +236,9 @@ combobox_filter = ctk.CTkComboBox(
     container_frame,
     values=[
         "Filtro de Suavização - média", "Filtro de Suavização - mediana", 
-        "Filtro Passa Alta Básico", "Filtro Operador de Robert", 
+        "Filtro Passa Alta Básico", "Filtro Operador de Robert Cruzado", 
         "Filtro Operador de Prewitt", "Filtro Operador de Prewitt - Magnitude", 
-        "Filtro de Alto Reforço", "Filtro Operador de Sobel"
+        "Filtro de Alto Reforço", "Filtro Operador de Sobel", "Filtro Operador de Sobel - Magnitude"
     ],
     command=combobox_callback,
     variable=combobox_var,
@@ -482,7 +500,7 @@ def aplicar_transformacao():
         label_transformacao.pack(side='left', padx=200); 
         print("Transformação Negativo aplicada a imagem exibida.")
     
-    elif transformacao_selecionada == "Sigmoide":
+    elif transformacao_selecionada == "Transferência de Intensidade":
         transformacao =  Sigmoide(caminho_imagem_selecionado_transformacoes)
 
         #centro dos valores de cinza, largura da janela para suavidade da transição
@@ -493,10 +511,22 @@ def aplicar_transformacao():
         label_transformacao.pack(side='left', padx=200); 
         print("Transformação Sigmoide aplicada a imagem exibida.")
 
+
+    elif transformacao_selecionada == "Transferência Linear":
+        transformacao =  LinearTransfer(caminho_imagem_selecionado_transformacoes)
+
+        #centro dos valores de cinza, largura da janela para suavidade da transição
+        transformacao.apply_linear_transfer(a=1.2,b=0.1)
+        tk_image = transformacao.get_ctk_image(width=256, height=256)
+            
+        label_transformacao = ctk.CTkLabel(tabview.tab("Transformações"), image=tk_image, text="")
+        label_transformacao.pack(side='left', padx=200); 
+        print("Transformação Sigmoide aplicada a imagem exibida.")
+
     else:
         print("Selecione uma transformação para aplicar.")
 
-
+LinearTransfer
 combobox_image_transformacao = ctk.CTkComboBox(
     container_frame_transformacao,
     values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
@@ -512,7 +542,7 @@ combobox_transformacao = ctk.CTkComboBox(
     values=[
         "Faixa Dinâmica", "Gama", 
         "Logaritmica", "Negativo", 
-        "Sigmoide"
+        "Transferência de Intensidade", "Transferência Linear"
     ],
     command=combobox_callback_transformacao,
     variable=combobox_var_transformacao,
@@ -648,21 +678,20 @@ container_frame_morfologia.pack(padx=10, pady=10, fill="x")
 #usando a instância da classe Visualizar Imagens para mostras a imagem na aba transformaçoes
 #Instância da Classe 
 visualizador_morfologia = VisualizadorImagemCustomTk(container_frame, caminho_imagem)
-visualizador_morfologia.exibir(tabview.tab("Morfologia"), 'Filtros')
-
+visualizador_morfologia.exibir(tabview.tab("Morfologia"))
 
 # Variáveis globais para manter seleção de filtro e caminho de imagem
 caminho_imagem_selecionado_morfologia = None
 label_morfologia = None
 morfologia_selecionada = None
 
-
-# Função chamada no Select das imagens
 def combobox_callback_image_morfologia(choice):
-    global caminho_imagem_selecionado_morfologia
+    global caminho_imagem_selecionado_morfologia, visualizador_morfologia
     print("Combobox dropdown clicked imagem:", choice)
     caminho_imagem_selecionado_morfologia = os.path.join(diretorio_imagens, choice)
-    visualizador_morfologia.exibir_imagem(caminho_imagem_selecionado_morfologia)
+    
+    # Exibe a imagem binária na primeira vez
+    visualizador_morfologia.exibir(tabview.tab("Morfologia"))
 
 def combobox_callback_morfologia(choice):
     global morfologia_selecionada
@@ -670,12 +699,13 @@ def combobox_callback_morfologia(choice):
     morfologia_selecionada = choice
 
 def aplicar_morfologia():
-    global morfologia_selecionada, caminho_imagem_selecionado_morfologia, label_morfologia  # Incluindo label como global
+    global morfologia_selecionada, caminho_imagem_selecionado_morfologia, label_morfologia
 
-      
+    # Limpar a imagem anterior se já estiver exibida
     if label_morfologia is not None:
-       label_morfologia.destroy() 
-
+        label_morfologia.destroy()  # Remove a label da imagem morfológica anterior
+    
+    # Aplicar a morfologia selecionada à imagem binária
     if morfologia_selecionada == "Dilatação":
         morfologia = Dilatacao(caminho_imagem_selecionado_morfologia)
         morfologia.apply_filter()
@@ -684,6 +714,7 @@ def aplicar_morfologia():
         label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
         label_morfologia.pack(side='left', padx=200)
         print("Morfologia de dilatação aplicado e imagem exibida.")
+    
     elif morfologia_selecionada == "Erosão":
         morfologia = Erosao(caminho_imagem_selecionado_morfologia)
         morfologia.erodir()
@@ -702,7 +733,6 @@ def aplicar_morfologia():
         label_morfologia.pack(side='left', padx=200)
         print("Morfologia de erosao aplicado e imagem exibida.")
 
-    
     elif morfologia_selecionada == "Abertura":
         morfologia = Abertura(caminho_imagem_selecionado_morfologia)
         morfologia.abertura()
@@ -712,18 +742,14 @@ def aplicar_morfologia():
         label_morfologia.pack(side='left', padx=200)
         print("Morfologia de erosao aplicado e imagem exibida.")
     
-    elif morfologia_selecionada == "Hit Or Miss":    
+    elif morfologia_selecionada == "Hit Or Miss":
         morfologia = HitOrMiss(caminho_imagem_selecionado_morfologia)
-        
         elemento_estruturante = np.ones((3, 3), dtype=np.uint8)
-        
         morfologia.hit_or_miss(elemento_estruturante)
-        
         tk_image = morfologia.get_ctk_image(width=256, height=256)
-        
+
         label_morfologia = ctk.CTkLabel(tabview.tab("Morfologia"), image=tk_image, text="")
         label_morfologia.pack(side='left', padx=200)
-        
         print("Morfologia de erosão aplicada e imagem exibida.")
     
     elif morfologia_selecionada == "Top Hat":
@@ -746,10 +772,10 @@ def aplicar_morfologia():
 
     else:
         print("Selecione uma morfologia para aplicar.")
-
+    
 combobox_image_morfologia = ctk.CTkComboBox(
     container_frame_morfologia,
-    values=["lena.pgm", "Lenag.pgm", "Airplane.pgm", "Lenasalp.pgm"],
+    values=["lena.pgm", "Airplane.pgm"],
     command=combobox_callback_image_morfologia,
     width=270,
     font=("Helvetica", 14),
@@ -759,11 +785,7 @@ combobox_image_morfologia.pack(side="left", padx=10, pady=10)
 combobox_var_morfologia = ctk.StringVar(value="Escolha a Morfologia")
 combobox_morfologia = ctk.CTkComboBox(
     container_frame_morfologia,
-    values=[
-        "Dilatação", "Erosão", 
-        "Fechamento", "Abertura", 
-        "Hit Or Miss", "Top Hat", "Bottom Hat"
-    ],
+    values=["Dilatação", "Erosão", "Fechamento", "Abertura", "Hit Or Miss", "Top Hat", "Bottom Hat"],
     command=combobox_callback_morfologia,
     variable=combobox_var_morfologia,
     width=270,
@@ -777,6 +799,7 @@ button_apply_morfologia = ctk.CTkButton(
     command=aplicar_morfologia
 )
 button_apply_morfologia.pack(side="left", padx=10, pady=10)
+
 
 #====================================================================================================================
 # Inicia o loop da interface

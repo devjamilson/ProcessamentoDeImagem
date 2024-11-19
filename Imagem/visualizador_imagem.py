@@ -13,7 +13,8 @@ class VisualizadorImagemCustomTk:
         self.caminho_imagem = caminho_imagem
         self.imagem = self.carregar_imagem()
         self.label_imagem = None  # Inicializa o label como None
-        self.label_histograma = None  
+        self.label_histograma = None 
+        self.label_binaria = None 
 
     def carregar_imagem(self):
         """Carrega uma imagem PGM (P2 ou P5) e converte para um objeto CTkImage."""
@@ -43,6 +44,17 @@ class VisualizadorImagemCustomTk:
                     for line in f:
                         imagem_data.extend(map(int, line.split()))
                     imagem = np.array(imagem_data, dtype=np.uint8).reshape((height, width))
+                elif header == b'P1':
+                    # Formato ASCII
+                    width, height = map(int, f.readline().split())
+                    maxval = int(f.readline().strip())
+                    
+                    # Carrega a imagem linha por linha em escala de cinza
+                    imagem_data = []
+                    for line in f:
+                        imagem_data.extend(map(int, line.split()))
+                    imagem = np.array(imagem_data, dtype=np.uint8).reshape((height, width))
+
                 else:
                     raise ValueError("Formato PGM não suportado (esperado P2 ou P5).")
 
@@ -91,6 +103,36 @@ class VisualizadorImagemCustomTk:
             self.caminho_imagem = novo_caminho_imagem
             self.imagem = self.carregar_imagem()
             self.exibir_img_histo(self.master) 
+
+
+    def exibir_binaria(self, tab, limiar=127):
+        """Converte a imagem original para binária e exibe no tab especificado."""
+        if self.imagem is not None:
+            # Extraímos a imagem PIL do objeto CTkImage
+            pil_imagem = self.imagem._light_image  # Acessa a imagem PIL do CTkImage
+            
+            # Converte a imagem PIL para uma matriz NumPy
+            imagem_np = np.array(pil_imagem)
+            
+            # Converte para imagem binária
+            imagem_binaria = self.converter_para_binaria(imagem_np, limiar)
+            
+            # Converte a matriz binária em uma imagem PIL
+            imagem_pil_binaria = Image.fromarray(imagem_binaria * 255, mode="L")
+            ctk_imagem_binaria = ctk.CTkImage(light_image=imagem_pil_binaria, dark_image=imagem_pil_binaria, size=(256, 256))
+            
+            # Exibir no CTkLabel
+            if self.label_binaria is None:
+                self.label_binaria = ctk.CTkLabel(tab, image=ctk_imagem_binaria, text="")
+                self.label_binaria.pack(side="left", padx=20)
+            else:
+                self.label_binaria.configure(image=ctk_imagem_binaria)
+
+
+    def converter_para_binaria(self, matriz, limiar):
+        """Converte uma matriz de tons de cinza para uma matriz binária usando um limiar."""
+        return (matriz >= limiar).astype(np.uint8)
+
 
     def exibir_imagem(self, novo_caminho_imagem):
         """Atualiza a imagem exibida com um novo caminho de imagem."""
